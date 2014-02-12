@@ -29,10 +29,10 @@
 ;;;
 
 (library (text json select parser)
-    (export parse-json-selector)
+    (export json:parse-selector)
     (import (rnrs) (packrat) (srfi :14))
 
-  (define parse-json-selector
+  (define json:parse-selector
     (let ()
       (define parser
 	(packrat-parser
