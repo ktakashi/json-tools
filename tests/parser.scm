@@ -7,7 +7,7 @@
   (syntax-rules ()
     ((_ str expect)
      (test-equal str expect
-		 (parse-json-selector (open-string-input-port str))))))
+		 (json:parse-selector (open-string-input-port str))))))
 (test-parser ".languagesSpoken .lang" '("languagesSpoken" >> "lang"))
 (test-parser ".drinkPreference :first-child" 
 	     '("drinkPreference" >> first-child))
