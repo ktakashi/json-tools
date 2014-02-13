@@ -44,6 +44,22 @@
       (object  . ,json:node?)
       (array   . ,json:array?)))
 
+  ;; should we make this configurable?
+  (define (nth-function n last?)
+    (lambda (node)
+      (let ((set ((json:descendant-or-self json:array?) node)))
+	(if (json:empty-nodeset? set)
+	    set
+	    (let ((set (json:nodeset-set set)))
+	      (apply json:nodeset
+		     (map (lambda (node)
+			    ;; unlikely it's not starting 0 but 1
+			    (if last?
+				(json:array-ref node 
+						(- (json:array-length node) n))
+				(json:array-ref node (- n 1))))
+			  set)))))))
+
   ;; construct select
   (define (json:select select)
     (let ((rules (if (string? select) 
@@ -118,6 +134,27 @@
 				    (loop (cdar rules) '() #t))
 			    ,@converters)
 			  nested?)))
+	      ;; first-child
+	      ((eq? (car rules) 'first-child)
+	       (loop (cdr rules)
+		     (cons (nth-function 1 #f) converters)
+		     nested?))
+	      ((eq? (car rules) 'last-child)
+	       (loop (cdr rules)
+		     (cons (nth-function 1 #t) converters)
+		     nested?))
+	      ;; (nth-child index)
+	      ((and (pair? (car rules))
+		    (eq? (caar rules) 'nth-child))
+	       (loop (cdr rules) 
+		     (cons (nth-function (cadar rules) #f) converters)
+		     nested?))
+	      ;; (nth-last-child index)
+	      ((and (pair? (car rules))
+		    (eq? (caar rules) 'nth-last-child))
+	       (loop (cdr rules) 
+		     (cons (nth-function (cadar rules) #t) converters)
+		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))
   )

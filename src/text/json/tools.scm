@@ -50,6 +50,7 @@
 	    json:nodeset->list
 	    json:nodeset
 	    json:nodeset-set
+	    json:empty-nodeset?
 	    json:as-nodeset
 
 	    json:node?
@@ -69,6 +70,7 @@
 	    json:array?
 	    json:array-elements
 	    json:array-ref
+	    json:array-length
 	    
 	    json:string
 	    json:string?
@@ -176,6 +178,9 @@
   (define (json:array-ref o n . default)
     (unless (json:array? o) (error 'json:array-ref "json:array required" o))
     (apply list-ref (json:node-value o) n default))
+  (define (json:array-length o)
+    (unless (json:array? o) (error 'json:array-ref "json:array required" o))
+    (length (json:node-value o)))
 
   ;; nodeset
   ;; introduce nodeset type. since the JSON structure doesn't have

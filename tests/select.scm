@@ -27,6 +27,9 @@
 	       #(("lang" . "Spanish") ("level" . "beginner"))))
 	    (json:nodeset->list ((json:select ".languagesSpoken") json1)))
 
+(test-equal ".\"weight\""
+	    '(("weight" . 156))
+	    (json:nodeset->list ((json:select ".\"weight\"") json1)))
 ;; TODO add more descendants...
 (test-equal ".languagesSpoken .lang"
 	    '(("lang" . "Bulgarian")
@@ -58,5 +61,25 @@
 
 (test-equal ".preferred ~ .lang" '(("lang" . "English"))
 	    (json:nodeset->list ((json:select ".preferred ~ .lang") json1)))
+
+(test-equal ".drinkPreference :first-child" 
+	    '("whiskey")
+	    (json:nodeset->list ((json:select ".drinkPreference :first-child")
+				 json1)))
+(test-equal ".drinkPreference :last-child" 
+	    '("wine")
+	    (json:nodeset->list ((json:select ".drinkPreference :last-child")
+				 json1)))
+
+;; for some reason it starts with 1
+(test-equal ".drinkPreference :nth-child(2)" 
+	    '("beer")
+	    (json:nodeset->list ((json:select ".drinkPreference :nth-child(2)")
+				 json1)))
+(test-equal ".drinkPreference :nth-last-child(1)" 
+	    '("wine")
+	    (json:nodeset->list 
+	     ((json:select ".drinkPreference :nth-last-child(1)")
+	      json1)))
 
 (test-end)
