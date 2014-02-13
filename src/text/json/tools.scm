@@ -91,6 +91,7 @@
 	    json:child
 	    json:ancestor
 	    json:descendant
+	    json:descendant-or-self
 	    json:following-sibling
 	    json:preceding-sibling
 	    json:sibling		; for convenience
@@ -311,12 +312,24 @@
 		(loop (if (pred? (car more)) (cons (car more) r) r)
 		      (append ((json:child-as-list json:node?) (car more))
 			      (cdr more))))))))
+  (define (json:descendant-or-self pred?)
+    (lambda (node)
+      (if (json:nodeset? node)
+	  (json:map-union (json:descendant-or-self pred?)
+			  (json:nodeset-set node))
+	  (let loop ((r '())
+		     (more (list (json:node node))))
+	    (if (null? more)
+		(apply json:nodeset (reverse! r))
+		(loop (if (pred? (car more)) (cons (car more) r) r)
+		      (append ((json:child-as-list json:node?) (car more))
+			      (cdr more))))))))
 
   (define (json:following-sibling pred?)
     (lambda (root-node)
       (lambda (node)
 	(if (json:nodeset? node)
-	    (json:map-union ((json:sibling pred?) root-node)
+	    (json:map-union ((json:following-sibling pred?) root-node)
 			    (json:nodeset-set node))
 	    ;; seqs ::= ((child siblings ...) ...)
 	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
@@ -335,7 +348,7 @@
     (lambda (root-node)
       (lambda (node)
 	(if (json:nodeset? node)
-	    (json:map-union ((json:sibling pred?) root-node)
+	    (json:map-union ((json:preceding-sibling pred?) root-node)
 			    (json:nodeset-set node))
 	    ;; seqs ::= ((child siblings ...) ...)
 	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
