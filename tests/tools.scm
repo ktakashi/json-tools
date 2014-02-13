@@ -23,44 +23,53 @@
 			(json:child-nodes json1))))
 	      (json:nodeset->list set)))
 
-(test-equal "json:child-as-list"
+(test-assert "json:child-as-list (convert)"
+	     (map json:node? 
+		  ((json:child-as-list
+		    (lambda (node)
+		      (and (json:map-entry? node)
+			   (equal? "favoriteColor" (json:map-entry-key node)))))
+		   json1)))
+(test-equal "json:child (convert)"
 	    '(("favoriteColor" . "yellow"))
-	    ((json:child-as-list (lambda (node)
-				   (and (pair? node)
-					(equal? "favoriteColor" (car node)))))
-	     json1))
+	    (json:nodeset->list
+	     ((json:child
+	       (lambda (node)
+		 (and (json:map-entry? node)
+		      (equal? "favoriteColor" (json:map-entry-key node)))))
+	      json1)))
 
 (test-equal "json:parent (single node)"
 	    '(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel"))))
 	    (let ((set (((json:parent
 			  (lambda (parent) 
-			    (and (pair? parent)
-				 (string=? "name" (car parent)))))
+			    (and (json:map-entry? parent)
+				 (string=? "name" (json:map-entry-key parent)))))
 			 json1)
 			(cdr (vector-ref json1 0)))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:parent (nodeset)"
 	    '(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel")))
-	      ("languagesSpoken"
-		  #(("lang" . "Bulgarian") ("level" . "advanced"))
-		  #(("lang" . "English")
-		    ("level" . "native")
-		    ("preferred" . #t))
-		  #(("lang" . "Spanish") ("level" . "beginner"))))
+	      (#(("lang" . "Bulgarian") ("level" . "advanced"))
+	       #(("lang" . "English")
+		 ("level" . "native")
+		 ("preferred" . #t))
+	       #(("lang" . "Spanish") ("level" . "beginner"))))
 	    (let ((set (((json:parent values) json1)
-			(json:make-nodeset (cdr (vector-ref json1 0))
-					   (cadr (vector-ref json1 2))))))
+			(json:nodeset (cdr (vector-ref json1 0))
+				      (cadr (vector-ref json1 2))))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:parent (nodeset only name)"
 	    '(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel"))))
 	    (let ((set (((json:parent
 			  (lambda (parent)
-			    (equal? "name" (json:map-entry-key parent))))
+			    (and (json:map-entry? parent)
+				 (string=? "name" (json:map-entry-key parent)))))
 			 json1)
-			(json:make-nodeset (cdr (vector-ref json1 0))
-					   (cadr (vector-ref json1 2))))))
+			(json:nodeset (cdr (vector-ref json1 0))
+				      (cadr (vector-ref json1 2))))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:ancestor (all)"
@@ -85,7 +94,8 @@
 	    '(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel"))))
 	    (let ((set (((json:ancestor 
 			  (lambda (parent) 
-			    (equal? "name" (json:map-entry-key parent))))
+			    (and (json:map-entry? parent)
+				 (string=? "name" (json:map-entry-key parent)))))
 			 json1)
 			(vector-ref (cdr (vector-ref json1 0)) 0))))
 	      (json:nodeset->list set)))
@@ -96,7 +106,8 @@
 	      "Lloyd"
 	      ("last" . "Hilaiel")
 	      "Hilaiel")
-	    (let ((set ((json:descendant values) (vector-ref json1 0))))
+	    (let ((set ((json:descendant values)
+			(json:map-entry (vector-ref json1 0)))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:following-sibling (all first)"
@@ -104,11 +115,13 @@
 	      #(("lang" . "Spanish") ("level" . "beginner")))
 	    (let ((set (((json:following-sibling values) json1)
 			(car ((json:child-as-list values)
-			      ((json:child 
-				(lambda (node)
-				  (equal? "languagesSpoken"
-					  (json:map-entry-key node))))
-			       json1))))))
+			      ((json:child values)
+			       ((json:child 
+				 (lambda (node)
+				   (and (json:map-entry? node)
+					(string=? "languagesSpoken"
+						  (json:map-entry-key node)))))
+				json1)))))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:sibling (all first)"
@@ -116,11 +129,13 @@
 	      #(("lang" . "Spanish") ("level" . "beginner")))
 	    (let ((set (((json:sibling values) json1)
 			(car ((json:child-as-list values)
-			      ((json:child 
-				(lambda (node)
-				  (equal? "languagesSpoken"
-					  (json:map-entry-key node))))
-			       json1))))))
+			      ((json:child values)
+			       ((json:child 
+				 (lambda (node)
+				   (and (json:map-entry? node)
+					(string=? "languagesSpoken"
+						  (json:map-entry-key node)))))
+				json1)))))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:sibling (all second)"
@@ -128,11 +143,13 @@
 	      #(("lang" . "Spanish") ("level" . "beginner")))
 	    (let ((set (((json:sibling values) json1)
 			(cadr ((json:child-as-list values)
-			       ((json:child 
-				(lambda (node)
-				  (equal? "languagesSpoken"
-					  (json:map-entry-key node))))
-			       json1))))))
+			       ((json:child values)
+				((json:child 
+				  (lambda (node)
+				    (and (json:map-entry? node)
+					 (string=? "languagesSpoken"
+						   (json:map-entry-key node)))))
+				 json1)))))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:sibling (all third)"
@@ -140,11 +157,13 @@
 	      #(("lang" . "English") ("level" . "native") ("preferred" . #t)))
 	    (let ((set (((json:sibling values) json1)
 			(caddr ((json:child-as-list values)
-			       ((json:child 
-				(lambda (node)
-				  (equal? "languagesSpoken"
-					  (json:map-entry-key node))))
-			       json1))))))
+				((json:child values)
+				 ((json:child 
+				   (lambda (node)
+				     (and (json:map-entry? node)
+					  (string=? "languagesSpoken"
+						    (json:map-entry-key node)))))
+				  json1)))))))
 	      (json:nodeset->list set)))
 
 (test-equal "json:sibling (all bit big)"

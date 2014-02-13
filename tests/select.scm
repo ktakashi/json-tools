@@ -20,11 +20,11 @@
 
 (test-equal ".languagesSpoken"
 	    '(("languagesSpoken"
-		  #(("lang" . "Bulgarian") ("level" . "advanced"))
-		  #(("lang" . "English")
-		    ("level" . "native")
-		    ("preferred" . #t))
-		  #(("lang" . "Spanish") ("level" . "beginner"))))
+	       #(("lang" . "Bulgarian") ("level" . "advanced"))
+	       #(("lang" . "English")
+		 ("level" . "native")
+		 ("preferred" . #t))
+	       #(("lang" . "Spanish") ("level" . "beginner"))))
 	    (json:nodeset->list ((json:select ".languagesSpoken") json1)))
 
 ;; TODO add more descendants...

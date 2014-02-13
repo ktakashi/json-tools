@@ -31,34 +31,56 @@
 ;; the APIs' name and behaviours are highly inspired by
 ;; SXPath and related libraries
 
-#|
-JSON structure memo;
-The structure must be the same as Chicken's json egg which is
-ported to Sagittarius and Mosh. (I may add it to this package
-to make this R6RS compatible).
 
-{}: associative array => vector
-[]: array             => list
-true, false           => boolean
-null                  => 'null (this may not be the same per implementation...)
-string                => string
-number                => number
+;; JSON structure memo;
+;; The structure must be the same as Chicken's json egg which is
+;; ported to Sagittarius and Mosh. (I may add it to this package
+;; to make this R6RS compatible).
+;; 
+;; {}: map      => vector
+;; []: array    => list
+;; true, false  => boolean
+;; null         => 'null (this may not be the same per implementation...)
+;; string       => string
+;; number       => number
 
-|#
+#!r6rs
 (library (text json tools)
     (export json:nodeset?
 	    json:nodeset->list
-	    json:make-nodeset
+	    json:nodeset
+	    json:nodeset-set
 	    json:as-nodeset
+
 	    json:node?
+	    json:node-value
+
+	    json:map
 	    json:map?
 	    json:map-size
 	    json:map-ref
+
+	    json:map-entry
 	    json:map-entry?
 	    json:map-entry-key
 	    json:map-entry-value
+
+	    json:array
 	    json:array?
+	    json:array-elements
 	    json:array-ref
+	    
+	    json:string
+	    json:string?
+	    
+	    json:number
+	    json:number?
+
+	    json:boolean
+	    json:boolean?
+
+	    json:null
+	    json:null?
 	    ;; common utilities
 	    json:filter
 	    json:child-nodes-as-list
@@ -74,55 +96,114 @@ number                => number
 	    json:sibling		; for convenience
 	    )
     (import (rnrs)
-	    (only (srfi :1) append-map reverse!))
+	    (only (srfi :1) append-map reverse! delete-duplicates!))
 
   ;; type thing
-  (define (json:node? o)
-    ;; symbol can be a key but for now don't accept
-    (or (string? o) (number? o) (boolean? o) (vector? o) (pair? o)))
-  (define (json:map? o) (vector? o))
-  (define (json:map-size o) (vector-length o))
+  ;; abstract node
+  (define-record-type (<json:node> %json:node json:node?)
+    ;; preserve original node value
+    (fields (immutable value json:node-value)))
+  ;; atoms
+  (define (atom-protocol who pred?)
+    (lambda (n)
+      (lambda (v)
+	(unless (pred? v) (error who "given value is not the valid value" v))
+	((n v)))))
+  (define-record-type (<json:string> json:string json:string?)
+    (parent <json:node>)
+    (protocol (atom-protocol 'json:string string?)))
+  (define-record-type (<json:number> json:number json:number?)
+    (parent <json:node>)
+    (protocol (atom-protocol 'json:number number?)))
+  (define-record-type (<json:boolean> json:boolean json:boolean?)
+    (parent <json:node>)
+    (protocol (atom-protocol 'json:boolean boolean?)))
+  (define-record-type (<json:null> json:null json:null?)
+    (parent <json:node>)
+    ;; TODO should we assume 'null?
+    (protocol (atom-protocol 'json:boolean (lambda (o) (eq? o 'null)))))
+  (define-record-type (<json:array> json:array json:array?)
+    (parent <json:node>)
+    (fields (immutable elements json:array-elements))
+    (protocol (lambda (n)
+		(lambda (a)
+		  (let ((p (n a)))
+		    (p (map json:node a)))))))
+
+  ;; map
+  (define-record-type (<json:map-entry> json:map-entry json:map-entry?)
+    (parent <json:node>)
+    (fields (immutable key json:map-entry-key)
+	    (immutable value json:map-entry-value))
+    (protocol (lambda (n)
+		(lambda (e)
+		  (let ((p (n e)))
+		    (p (car e) (cdr e)))))))
+  (define-record-type (<json:map> json:map json:map?)
+    (parent <json:node>)
+    (fields (immutable entries json:map-entries))
+    (protocol (lambda (n)
+		(lambda (vec)
+		  (let ((p (n vec)))
+		    (p (vector-map json:map-entry vec)))))))
+  
+  (define (json:node o)
+    (cond ((json:node? o) o)
+	  ((vector? o) 	 (json:map o))
+	  ;; this makes a bit trouble with map-entry
+	  ((list? o)   	 (json:array o))
+	  ((string? o) 	 (json:string o))
+	  ((number? o) 	 (json:number o))
+	  ((boolean? o)  (json:boolean o))
+	  ((eq? o 'null) (json:null o))
+	  (else (error 'json:node "unsupported value" o))))
+  
+  (define (json:map-size o) (json:map-entries (vector-length o)))
   (define (json:map-ref o key . default)
-    (let ((len (json:map-size o)))
+    (let ((len (json:map-size o))
+	  (value (json:node-value o)))
       (let loop ((i 0))
 	(if (= i len)
 	    (if (pair? default)
 		(car default)
 		(error 'json:map-ref "no entry found" key))
-	    (let ((e (vector-ref o i)))
-	      (if (and (json:map-entry? e) (equal? key (json:map-entry-key e)))
+	    (let ((e (vector-ref value i)))
+	      (if (equal? key (json:map-entry-key e))
 		  (json:map-entry-value e)
 		  (loop (+ i 1))))))))
-  (define (json:map-entry? node)
-    (and (pair? node) (string? (car node))))
-  (define (json:map-entry-key node) 
-    (and (json:map-entry? node) (car node)))
-  (define (json:map-entry-value node)
-    (and (json:map-entry? node) (cdr node)))
-  (define (json:array? o) (list? o))
+
   (define (json:array-ref o n . default)
-    (apply list-ref o n default))
+    (unless (json:array? o) (error 'json:array-ref "json:array required" o))
+    (apply list-ref (json:node-value o) n default))
 
   ;; nodeset
   ;; introduce nodeset type. since the JSON structure doesn't have
   ;; any hint if it's nodeset or not. e.g) array can contain anything
   ;; to make sure it we introduce this
-  (define-record-type (json:nodeset json:make-nodeset json:nodeset?)
-    (fields (immutable set json:nodeset->list))
-    (protocol (lambda (p) (lambda set (p set)))))
+  (define-record-type (<json:nodeset> json:nodeset json:nodeset?)
+    (fields (immutable set json:nodeset-set))
+    (protocol (lambda (p) 
+		(lambda set 
+		  (p (delete-duplicates! (map json:node set) eq?))))))
 
-  (define *json:empty-nodeset* (json:make-nodeset))
+  (define (json:nodeset->list nodeset)
+    (let loop ((set (json:nodeset-set nodeset)) (r '()))
+      (if (null? set)
+	  (reverse! r)
+	  (loop (cdr set) (cons (json:node-value (car set)) r)))))
+
+  (define *json:empty-nodeset* (json:nodeset))
   (define (json:empty-nodeset? nodeset)
-    (and (json:nodeset? nodeset) (null? (json:nodeset->list nodeset))))
+    (and (json:nodeset? nodeset) (null? (json:nodeset-set nodeset))))
   (define (json:as-nodeset node)
-    (if (json:nodeset? node) node (json:make-nodeset node)))
+    (if (json:nodeset? node) node (json:nodeset (json:node node))))
   ;; shortcut
   (define (json:as-nodeset->list node)
-    (if (json:nodeset? node) (json:nodeset->list node) (list node)))
+    (if (json:nodeset? node) (json:nodeset-set node) (list (json:node node))))
   ;; utilities for nodeset
   (define (json:union-nodeset nodeset-list)
-    (let ((sets (append-map json:nodeset->list nodeset-list)))
-      (apply json:make-nodeset sets)))
+    (let ((sets (append-map json:nodeset-set nodeset-list)))
+      (apply json:nodeset sets)))
 
   ;; misc utils
   ;; returns nodeset
@@ -137,68 +218,53 @@ number                => number
     (lambda (node-list)
       (let loop ((lst (json:as-nodeset->list node-list)) (r '()))
 	(if (null? lst)
-	    (apply json:make-nodeset (reverse! r))
+	    (apply json:nodeset (reverse! r))
 	    (let ((result (pred? (car lst))))
 	      (loop (cdr lst) (if (and result (not (null? result)))
 				  (cons (car lst) r)
 				  r)))))))
-  (define (json:child-nodes-as-list node)
-    (cond ((pair? node) 
-	   (if (pair? (cdr node))
-	       ;; array the child nodes are cdr
-	       (cdr node)
-	       ;; atom or associative array. return it as a list
-	       (list (cdr node))))
-	  ((vector? node)
-	   ;; each element of the node is child node
-	   (do ((len (vector-length node)) (i 0 (+ i 1))
-		(r '() (cons (vector-ref node i) r)))
-	       ((= i len) (reverse! r))))
-	  ;; atom doesn't have child nodes
-	  (else '())))
+
   (define (json:child-nodes node)
-    (apply json:make-nodeset (json:child-nodes-as-list node)))
+    (let ((node (if (json:node? node) node (json:node node))))
+      (cond ((json:map? node)
+	     (apply json:nodeset (vector->list (json:map-entries node))))
+	    ((json:array? node)
+	     (apply json:nodeset (json:array-elements node)))
+	    ((json:map-entry? node)
+	     (json:nodeset (json:map-entry-value node)))
+	    (else *json:empty-nodeset*))))
+  (define (json:child-nodes-as-list node)
+    (json:nodeset-set (json:child-nodes node)))
 
   ;; selectors
   (define (json:child pred?)
     (lambda (node)
-      (cond ((json:nodeset? node)
-	     (json:map-union (json:child pred?) (json:nodeset->list node)))
-	    ((pair? node) 
-	     (if (pair? (cdr node)) ;; array needs to be treated as a nodeset
-		 (let loop ((nodes (cdr node)) (r '()))
-		   (if (null? nodes)
-		       (apply json:make-nodeset (reverse! r))
-		       (let ((result (pred? (car nodes))))
-			 (loop (cdr nodes)
-			       (if (and result
-					(not (json:empty-nodeset? result)))
-				   (cons (car nodes) r)
-				   r)))))
-		 (json:as-nodeset ((json:filter pred?) (cdr node)))))
-	    ((vector? node)
-	     (let ((len (vector-length node)))
-	       (let loop ((i 0) (r '()))
-		 (if (= i len)
-		     (apply json:make-nodeset (reverse! r))
-		     (let ((result ((json:filter pred?) (vector-ref node i))))
-		       (loop (+ i 1) 
-			     (if (and result (not (json:empty-nodeset? result)))
-				 (cons (vector-ref node i) r)
-					 r)))))))
-	    ;; atom doesn't have child
-	    (else *json:empty-nodeset*))))
-
+      (if (json:nodeset? node)
+	  (json:map-union (json:child pred?) (json:nodeset-set node))
+	  (let loop ((nodes (json:child-nodes-as-list node)) (r '()))
+	    (if (null? nodes)
+		(apply json:nodeset (reverse! r))
+		(loop (cdr nodes)
+		      (if (pred? (car nodes))
+			  (cons (car nodes) r)
+			  r)))))))
+  
   (define (json:child-as-list pred?)
     (lambda (node)
-      (json:nodeset->list ((json:child pred?) node))))
+      (json:nodeset-set ((json:child pred?) node))))
+
+  (define (target? node node/raw)
+    (let ((v (json:node-value node)))
+      (or (eq? v node/raw)
+	  (and (json:node? node/raw)
+	       (eq? v (json:node-value node/raw))))))
 
   (define (json:parent pred?)
     (lambda (root-node)
       (lambda (node)
 	(if (json:nodeset? node)
 	    (json:map-union ((json:parent pred?) root-node)
-			    (json:nodeset->list node))
+			    (json:nodeset-set node))
 	    ;; pairs ::= ((child . parent) ...)
 	    (let loop ((pairs (append-map
 			       (lambda (root-n)
@@ -208,7 +274,7 @@ number                => number
 	      (if (null? pairs)
 		  *json:empty-nodeset*
 		  (let ((pair (car pairs)))
-		    (if (eq? (car pair) node)
+		    (if (target? (car pair) node)
 			((json:filter pred?) (cdr pair))
 			(loop (append
 			       (map (lambda (arg) (cons arg (car pair)))
@@ -220,15 +286,15 @@ number                => number
       (lambda (node)
 	(if (json:nodeset? node)
 	    (json:map-union ((json:ancestor pred?) root-node)
-			    (json:nodeset->list node))
+			    (json:nodeset-set node))
 	    ;; paths ::= ((child parents ...) ...)
 	    (let loop ((paths (list (json:as-nodeset->list root-node))))
 	      (if (null? paths)
 		  *json:empty-nodeset*
 		  (let ((path (car paths)))
-		    (if (eq? (car path) node)
+		    (if (target? (car path) node)
 			((json:filter pred?) 
-			 (apply json:make-nodeset (cdr path)))
+			 (apply json:nodeset (cdr path)))
 			(loop (append
 			       (map (lambda (arg) (cons arg path))
 				    (json:child-nodes-as-list (car path)))
@@ -237,11 +303,11 @@ number                => number
   (define (json:descendant pred?)
     (lambda (node)
       (if (json:nodeset? node)
-	  (json:map-union (json:descendant pred?) (json:nodeset->list node))
+	  (json:map-union (json:descendant pred?) (json:nodeset-set node))
 	  (let loop ((r '())
 		     (more ((json:child-as-list json:node?) node)))
 	    (if (null? more)
-		(apply json:make-nodeset (reverse! r))
+		(apply json:nodeset (reverse! r))
 		(loop (if (pred? (car more)) (cons (car more) r) r)
 		      (append ((json:child-as-list json:node?) (car more))
 			      (cdr more))))))))
@@ -251,7 +317,7 @@ number                => number
       (lambda (node)
 	(if (json:nodeset? node)
 	    (json:map-union ((json:sibling pred?) root-node)
-			    (json:nodeset->list node))
+			    (json:nodeset-set node))
 	    ;; seqs ::= ((child siblings ...) ...)
 	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
 	      (if (null? seqs)
@@ -261,16 +327,16 @@ number                => number
 			   (loop (append (map (json:child-as-list json:node?)
 					      (car seqs))
 					 (cdr seqs))))
-			  ((eq? (car seq) node)
+			  ((target? (car seq) node)
 			   ((json:filter pred?) 
-			    (apply json:make-nodeset (cdr seq))))
+			    (apply json:nodeset (cdr seq))))
 			  (else (rpt (cdr seq)))))))))))
   (define (json:preceding-sibling pred?)
     (lambda (root-node)
       (lambda (node)
 	(if (json:nodeset? node)
 	    (json:map-union ((json:sibling pred?) root-node)
-			    (json:nodeset->list node))
+			    (json:nodeset-set node))
 	    ;; seqs ::= ((child siblings ...) ...)
 	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
 	      (if (null? seqs)
@@ -283,21 +349,21 @@ number                => number
 					  ((json:child-as-list json:node?) n)))
 				       (car seqs))
 				  (cdr seqs))))
-			  ((eq? (car seq) node)
+			  ((target? (car seq) node)
 			   ((json:filter pred?) 
-			    (apply json:make-nodeset (reverse (cdr seq)))))
+			    (apply json:nodeset (reverse (cdr seq)))))
 			  (else (rpt (cdr seq)))))))))))
 
   (define (json:sibling pred?)
     (lambda (root-node)
       (lambda (node)
-	(define ->list json:nodeset->list)
+	(define ->list json:nodeset-set)
 	(define (merge p f)
 	  (cond ((null? p) f)
 		((null? f) p)
 		(else
 		 `(,@p ,@f))))
-	(apply json:make-nodeset
+	(apply json:nodeset
 	       (merge
 		(->list (((json:preceding-sibling pred?) root-node) node))
 		(->list (((json:following-sibling pred?) root-node) node)))))))

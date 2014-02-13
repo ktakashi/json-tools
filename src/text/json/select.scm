@@ -37,10 +37,10 @@
 	    (text json select parser))
 
   (define type-predicates
-    `((number  .  ,number?)
-      (string  . ,string?)
-      (boolean . ,boolean?)
-      (null    . ,(lambda (o) (eq? o 'null))) ;; TODO
+    `((number  . ,json:number?)
+      (string  . ,json:string?)
+      (boolean . ,json:boolean?)
+      (null    . ,json:null?)
       (object  . ,json:node?)
       (array   . ,json:array?)))
 
@@ -51,10 +51,11 @@
 		     select)))
       (define (key-name=? name)
 	(lambda (node)
-	  (equal? name (json:map-entry-key node))))
+	  (and (json:map-entry? node)
+	       (equal? name (json:map-entry-key node)))))
       (define (value-type=? pred)
 	(lambda (node)
-	  (if (json:map? node)
+	  (if (json:map-entry? node)
 	      (pred (json:map-entry-value node))
 	      ;; array will be passed per element :)
 	      (pred node))))
