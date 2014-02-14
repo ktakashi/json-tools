@@ -45,20 +45,24 @@
       (array   . ,json:array?)))
 
   ;; should we make this configurable?
-  (define (nth-function n last?)
+  (define (nth-function n last? pred?)
     (lambda (node)
       (let ((set ((json:descendant-or-self json:array?) node)))
 	(if (json:empty-nodeset? set)
 	    set
 	    (let ((set (json:nodeset-set set)))
 	      (apply json:nodeset
-		     (map (lambda (node)
-			    ;; unlikely it's not starting 0 but 1
-			    (if last?
-				(json:array-ref node 
-						(- (json:array-length node) n))
-				(json:array-ref node (- n 1))))
-			  set)))))))
+		     (filter-map 
+		      (lambda (node)
+			;; unlikely it's not starting 0 but 1
+			(let ((e (if last?
+				     (json:array-ref node 
+				      (- (json:array-length node) n))
+				     (json:array-ref node (- n 1)))))
+			  (if pred?
+			      (and (pred? e) e)
+			      e)))
+		      set)))))))
   (define only-child
     (lambda (node) 
       ((json:descendant-or-self 
@@ -71,9 +75,10 @@
     (let ((rules (if (string? select) 
 		     (json:parse-selector (open-string-input-port select))
 		     select)))
-      (define (key-name=? name)
+      (define (key-name=? name pred?)
 	(lambda (node)
 	  (and (json:map-entry? node)
+	       (or (not pred?) (pred? (json:map-entry-key node)))
 	       (equal? name (json:node-value (json:map-entry-key node))))))
 
       (let loop ((rules rules) (converters '()) (nested? #f))
@@ -96,7 +101,8 @@
 				    (cdr conv))))))))
 	      ((string? (car rules)) ;; class
 	       (loop (cdr rules)
-		     (cons (json:descendant-or-self (key-name=? (car rules)))
+		     (cons (json:descendant-or-self 
+			    (key-name=? (car rules) nested?))
 			   converters)
 		     nested?))
 	      ;; >>
@@ -131,18 +137,17 @@
 		    (assq (caar rules) type-predicates))
 	       => (lambda (slot)
 		    (loop (cdr rules)
-			  `(,@(cons (json:descendant (cdr slot))
-				    (loop (cdar rules) '() #t))
+			  `(,@(loop (cdar rules) '() (cdr slot))
 			    ,@converters)
 			  nested?)))
 	      ;; first-child
 	      ((eq? (car rules) 'first-child)
 	       (loop (cdr rules)
-		     (cons (nth-function 1 #f) converters)
+		     (cons (nth-function 1 #f nested?) converters)
 		     nested?))
 	      ((eq? (car rules) 'last-child)
 	       (loop (cdr rules)
-		     (cons (nth-function 1 #t) converters)
+		     (cons (nth-function 1 #t nested?) converters)
 		     nested?))
 	      ((eq? (car rules) 'only-child)
 	       (loop (cdr rules)
@@ -152,13 +157,13 @@
 	      ((and (pair? (car rules))
 		    (eq? (caar rules) 'nth-child))
 	       (loop (cdr rules) 
-		     (cons (nth-function (cadar rules) #f) converters)
+		     (cons (nth-function (cadar rules) #f nested?) converters)
 		     nested?))
 	      ;; (nth-last-child index)
 	      ((and (pair? (car rules))
 		    (eq? (caar rules) 'nth-last-child))
 	       (loop (cdr rules) 
-		     (cons (nth-function (cadar rules) #t) converters)
+		     (cons (nth-function (cadar rules) #t  nested?) converters)
 		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))

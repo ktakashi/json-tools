@@ -178,7 +178,7 @@
 
   (define (json:array-ref o n . default)
     (unless (json:array? o) (error 'json:array-ref "json:array required" o))
-    (apply list-ref (json:node-value o) n default))
+    (apply list-ref (json:array-elements o) n default))
   (define (json:array-length o)
     (unless (json:array? o) (error 'json:array-ref "json:array required" o))
     (length (json:node-value o)))

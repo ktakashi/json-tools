@@ -56,7 +56,8 @@
 	      ("whiskey" "beer" "wine"))
 	    (json:nodeset->list ((json:select "array") json1)))
 
-(test-equal "string:favoriteColor" '("yellow")
+(test-equal "string.favoriteColor" 
+	    '(("favoriteColor" . "yellow"))
 	    (json:nodeset->list ((json:select "string.favoriteColor") json1)))
 
 (test-equal ".preferred ~ .lang" '(("lang" . "English"))
@@ -81,5 +82,10 @@
 	    (json:nodeset->list 
 	     ((json:select ".drinkPreference :nth-last-child(1)")
 	      json1)))
+
+;; combinations
+(test-equal "string.lang" 
+	    '(("lang" . "Bulgarian") ("lang" . "English") ("lang" . "Spanish"))
+	    (json:nodeset->list ((json:select "string.lang") json1)))
 
 (test-end)

@@ -22,6 +22,10 @@ JSON Select
 As JSON query, this library (will) provide JSONSelect which is based on
 [jsonselect.org](http://jsonselect.org/#docs) with S-expression selector.
 
+NOTE: original implementation doesn't match with map entries however
+this consider it as a node so this may return the different result.
+
+
 Language support
 ================
 
@@ -76,7 +80,7 @@ A node of type T which is the nth child of an array parent counting from the end
 A node of type T which is the last child of an array parent (equivalent
 to T:nth-last-child(1)
 
--- **Level 2** -- `T:only-child`
+-- **Level 2** -- `T:only-child` - done!
 
 A node of type T which is the only child of an array parent
 
