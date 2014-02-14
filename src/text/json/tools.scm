@@ -50,6 +50,7 @@
 	    json:nodeset->list
 	    json:nodeset
 	    json:nodeset-set
+	    json:empty-nodeset
 	    json:empty-nodeset?
 	    json:as-nodeset
 
@@ -141,7 +142,7 @@
     (protocol (lambda (n)
 		(lambda (e)
 		  (let ((p (n e)))
-		    (p (car e) (cdr e)))))))
+		    (p (json:node (car e)) (json:node (cdr e))))))))
   (define-record-type (<json:map> json:map json:map?)
     (parent <json:node>)
     (fields (immutable entries json:map-entries))
@@ -190,7 +191,13 @@
     (fields (immutable set json:nodeset-set))
     (protocol (lambda (p) 
 		(lambda set 
-		  (p (delete-duplicates! (map json:node set) eq?))))))
+		  (p (delete-duplicates! 
+		      (map json:node set)
+		      (lambda (a b)
+			(or (eq? a b) ;; easy case
+			    ;; the same but checks inside
+			    (eq? (json:node-value a)
+				 (json:node-value b))))))))))
 
   (define (json:nodeset->list nodeset)
     (let loop ((set (json:nodeset-set nodeset)) (r '()))
@@ -199,6 +206,7 @@
 	  (loop (cdr set) (cons (json:node-value (car set)) r)))))
 
   (define *json:empty-nodeset* (json:nodeset))
+  (define (json:empty-nodeset) *json:empty-nodeset*)
   (define (json:empty-nodeset? nodeset)
     (and (json:nodeset? nodeset) (null? (json:nodeset-set nodeset))))
   (define (json:as-nodeset node)

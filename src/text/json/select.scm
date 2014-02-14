@@ -32,7 +32,7 @@
 (library (text json select)
     (export json:select)
     (import (rnrs)
-	    (only (srfi :1) reverse!)
+	    (only (srfi :1) reverse! filter-map)
 	    (text json tools)
 	    (text json select parser))
 
@@ -59,6 +59,12 @@
 						(- (json:array-length node) n))
 				(json:array-ref node (- n 1))))
 			  set)))))))
+  (define only-child
+    (lambda (node) 
+      ((json:descendant-or-self 
+	(lambda (node) (and (not (json:array? node))
+			    (not (json:map-entry? node)))))
+       node)))
 
   ;; construct select
   (define (json:select select)
@@ -68,13 +74,8 @@
       (define (key-name=? name)
 	(lambda (node)
 	  (and (json:map-entry? node)
-	       (equal? name (json:map-entry-key node)))))
-      (define (value-type=? pred)
-	(lambda (node)
-	  (if (json:map-entry? node)
-	      (pred (json:map-entry-value node))
-	      ;; array will be passed per element :)
-	      (pred node))))
+	       (equal? name (json:node-value (json:map-entry-key node))))))
+
       (let loop ((rules rules) (converters '()) (nested? #f))
 	(cond ((null? rules)
 	       (if nested?
@@ -121,7 +122,7 @@
 		    (assq (car rules) type-predicates))
 	       => (lambda (slot)
 		    (loop (cdr rules)
-			  (cons (json:descendant (value-type=? (cdr slot)))
+			  (cons (json:descendant (cdr slot))
 				converters)
 			  nested?)))
 	      ;; (type somethig)
@@ -130,7 +131,7 @@
 		    (assq (caar rules) type-predicates))
 	       => (lambda (slot)
 		    (loop (cdr rules)
-			  `(,@(cons (json:descendant (value-type=? (cdr slot)))
+			  `(,@(cons (json:descendant (cdr slot))
 				    (loop (cdar rules) '() #t))
 			    ,@converters)
 			  nested?)))
@@ -142,6 +143,10 @@
 	      ((eq? (car rules) 'last-child)
 	       (loop (cdr rules)
 		     (cons (nth-function 1 #t) converters)
+		     nested?))
+	      ((eq? (car rules) 'only-child)
+	       (loop (cdr rules)
+		     (cons only-child converters)
 		     nested?))
 	      ;; (nth-child index)
 	      ((and (pair? (car rules))
