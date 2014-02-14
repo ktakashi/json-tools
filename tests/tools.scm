@@ -15,11 +15,14 @@
 		 ("drinkPreference" "whiskey" "beer" "wine")
 		 ("weight" . 156)))
 
+(define (json:map-entry-key-as-string node)
+  (json:node-value (json:map-entry-key node)))
+
 (test-equal "json:filter"
 	    '(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel"))))
 	    (let ((set ((json:filter 
 			 (lambda (node)
-			   (equal? "name" (json:map-entry-key node))))
+			   (equal? "name" (json:map-entry-key-as-string node))))
 			(json:child-nodes json1))))
 	      (json:nodeset->list set)))
 
@@ -28,7 +31,8 @@
 		  ((json:child-as-list
 		    (lambda (node)
 		      (and (json:map-entry? node)
-			   (equal? "favoriteColor" (json:map-entry-key node)))))
+			   (equal? "favoriteColor"
+				   (json:map-entry-key-as-string node)))))
 		   json1)))
 (test-equal "json:child (convert)"
 	    '(("favoriteColor" . "yellow"))
@@ -36,7 +40,8 @@
 	     ((json:child
 	       (lambda (node)
 		 (and (json:map-entry? node)
-		      (equal? "favoriteColor" (json:map-entry-key node)))))
+		      (equal? "favoriteColor" 
+			      (json:map-entry-key-as-string node)))))
 	      json1)))
 
 (test-equal "json:parent (single node)"
@@ -44,7 +49,8 @@
 	    (let ((set (((json:parent
 			  (lambda (parent) 
 			    (and (json:map-entry? parent)
-				 (string=? "name" (json:map-entry-key parent)))))
+				 (string=? "name" 
+					   (json:map-entry-key-as-string parent)))))
 			 json1)
 			(cdr (vector-ref json1 0)))))
 	      (json:nodeset->list set)))
@@ -66,7 +72,8 @@
 	    (let ((set (((json:parent
 			  (lambda (parent)
 			    (and (json:map-entry? parent)
-				 (string=? "name" (json:map-entry-key parent)))))
+				 (string=? "name" 
+					   (json:map-entry-key-as-string parent)))))
 			 json1)
 			(json:nodeset (cdr (vector-ref json1 0))
 				      (cadr (vector-ref json1 2))))))
@@ -95,7 +102,8 @@
 	    (let ((set (((json:ancestor 
 			  (lambda (parent) 
 			    (and (json:map-entry? parent)
-				 (string=? "name" (json:map-entry-key parent)))))
+				 (string=? "name" 
+					   (json:map-entry-key-as-string parent)))))
 			 json1)
 			(vector-ref (cdr (vector-ref json1 0)) 0))))
 	      (json:nodeset->list set)))
@@ -120,7 +128,7 @@
 				 (lambda (node)
 				   (and (json:map-entry? node)
 					(string=? "languagesSpoken"
-						  (json:map-entry-key node)))))
+						  (json:map-entry-key-as-string node)))))
 				json1)))))))
 	      (json:nodeset->list set)))
 
@@ -134,7 +142,7 @@
 				 (lambda (node)
 				   (and (json:map-entry? node)
 					(string=? "languagesSpoken"
-						  (json:map-entry-key node)))))
+						  (json:map-entry-key-as-string node)))))
 				json1)))))))
 	      (json:nodeset->list set)))
 
@@ -148,7 +156,7 @@
 				  (lambda (node)
 				    (and (json:map-entry? node)
 					 (string=? "languagesSpoken"
-						   (json:map-entry-key node)))))
+						   (json:map-entry-key-as-string node)))))
 				 json1)))))))
 	      (json:nodeset->list set)))
 
@@ -162,7 +170,7 @@
 				   (lambda (node)
 				     (and (json:map-entry? node)
 					  (string=? "languagesSpoken"
-						    (json:map-entry-key node)))))
+						    (json:map-entry-key-as-string node)))))
 				  json1)))))))
 	      (json:nodeset->list set)))
 
