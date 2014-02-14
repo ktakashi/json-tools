@@ -63,12 +63,21 @@
 			      (and (pred? e) e)
 			      e)))
 		      set)))))))
-  (define only-child
+  (define (only-child pred?)
     (lambda (node) 
       ((json:descendant-or-self 
-	(lambda (node) (and (not (json:array? node))
-			    (not (json:map-entry? node)))))
+	(lambda (node) 
+	  (and (not (json:array? node))
+	       (not (json:map-entry? node))
+	       (or pred? (pred? node)))))
        node)))
+
+  (define (root nested?)
+    (lambda (root)
+      (lambda (node)
+	(if (eq? root node)
+	    (json:as-nodeset node)
+	    (json:empty-nodeset)))))
 
   ;; construct select
   (define (json:select select)
@@ -151,7 +160,7 @@
 		     nested?))
 	      ((eq? (car rules) 'only-child)
 	       (loop (cdr rules)
-		     (cons only-child converters)
+		     (cons (only-child nested?) converters)
 		     nested?))
 	      ;; (nth-child index)
 	      ((and (pair? (car rules))
@@ -164,6 +173,10 @@
 		    (eq? (caar rules) 'nth-last-child))
 	       (loop (cdr rules) 
 		     (cons (nth-function (cadar rules) #t  nested?) converters)
+		     nested?))
+	      ((eq? (car rules) 'root)
+	       (loop (cdr rules)
+		     (cons (list (root nested?)) converters)
 		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))

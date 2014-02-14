@@ -46,7 +46,7 @@ key property
 
 Same as previous, but with property name specified as a JSON string
 
--- **Level 1** -- `T:root`
+-- **Level 1** -- `T:root` - done!
 
 A node of type T which is the root of the JSON document
 

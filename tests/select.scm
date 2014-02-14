@@ -83,9 +83,22 @@
 	     ((json:select ".drinkPreference :nth-last-child(1)")
 	      json1)))
 
+;; root
+(test-equal ":root" 
+	    (list json1)
+	    (json:nodeset->list ((json:select ":root") json1)))
+(test-equal ":root .lang" 
+	    '(("lang" . "Bulgarian") ("lang" . "English") ("lang" . "Spanish"))
+	    (json:nodeset->list ((json:select ":root .lang") json1)))
+(test-equal ".lang :root" '()
+	    (json:nodeset->list ((json:select ".lang :root") json1)))
+
 ;; combinations
 (test-equal "string.lang" 
 	    '(("lang" . "Bulgarian") ("lang" . "English") ("lang" . "Spanish"))
 	    (json:nodeset->list ((json:select "string.lang") json1)))
+(test-equal "string:nth-child(2)"
+	    '("aisle" "beer")
+	    (json:nodeset->list ((json:select "string:nth-child(2)") json1)))
 
 (test-end)
