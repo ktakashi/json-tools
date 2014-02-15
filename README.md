@@ -1,5 +1,5 @@
 JSON Tools for R6RS Scheme
----------------------------------
+==========================
 
 Collection of JSON utilities.
 
@@ -11,7 +11,7 @@ TODO document for S-JSON structure (Chichken's json module format)
 
 
 JSON Tools
------------
+==========
 
 JSON Tools provides utilities for JSON. The most of the procedures implicitly
 converts given S-expression JSON structure to provided JSON types. Followings
@@ -31,73 +31,50 @@ The selectors return following nodeset type;
 - `<json:nodeset>` - set of nodes defined above.
 
 Constructors
-============
+------------
 
 In some case, you may need to use constructors to make sure the node type is
 indeed you are expecting. For example, there is no way to detect the difference
 between JSON array and JSON map entry if it's still S-expression.
 
-```
-(json:node o)
-```
+```(json:node o)```
 Converts given _o_ to suitable JSON node.
 
-```
-(json:map vector)
-```
+```(json:map vector)```
 Converts given _vector_ to `<json:map>` object.
 
-```
-(json:map-entry pair)
-```
+```(json:map-entry pair)```
 Converts given _pair_ to `<json:map-entry>` object.
 
-```
-(json:map-array list)
-```
+```(json:map-array list)```
 Converts given _list_ to `<json:map-array>` object.
 
-```
-(json:string string)
-```
+```(json:string string)```
 Converts given _string_ to `<json:string>` object.
 
-```
-(json:number number)
-```
+```(json:number number)```
 Converts given _number_ to `<json:number>` object.
 
-```
-(json:boolean boolean)
-```
+```(json:boolean boolean)```
 Converts given _boolean_ to `<json:boolean>` object.
 
-```
-(json:null null)
-```
+```(json:null null)```
 Converts given _null_ to `<json:null>` object. The _null_ must be a symbol
 `null`.
 
-```
-(json:nodeset nodes ...)
-```
+```(json:nodeset nodes ...)```
 Converts given _nodes_ to `<json:nodeset>` object. The returning value has
 no duplicated nodes.
 
 Predicates
-==========
+----------
 
-```
-(json:nodeset? o)
-```
+```(json:nodeset? o)```
 Returns #t if given _o_ is JSON nodeset.
 
 
-
-
-
 JSON Select
------------
+===========
 
 As JSON query, this library (will) provide JSONSelect which is based on
 [jsonselect.org](http://jsonselect.org/#docs) with S-expression selector.
@@ -107,7 +84,7 @@ this consider it as a node so this may return the different result.
 
 
 Language support
-================
+----------------
 
 -- **Level 1** -- `*` - done!
 
@@ -199,7 +176,7 @@ A node of type T with a string value contains the substring S
 
 
 Supporting implementations
---------------------------
+==========================
 
 * Sagittarius Scheme 0.5.0 (or later)
 * Mosh 0.2.7
