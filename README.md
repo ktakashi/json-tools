@@ -71,7 +71,7 @@ no duplicated nodes.
 Converts given _o_ to `<json:nodeset>` object. If the _o_ is already 
 a JSON nodeset then it won't re-convert.
 
-```(json:empty-nodeset)```
+```(json:empty-nodeset )```
 Returns empty nodeset.
 
 Predicates
