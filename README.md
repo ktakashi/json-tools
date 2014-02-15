@@ -95,15 +95,21 @@ A node of type U with a sibling of type T
 NOTE: original implementation contains self node but I think it's weird
 so the result nodeset doesn't contain self node but only siblings.
 
--- **Level 3** -- `T:has(S)`
-
-A node of type T which has a child node satisfying the selector S
-
 -- **Level 3** -- `T:expr(E)`
 
 A node of type T with a value that satisfies the expression E
 
--- **Level 3** -- `T:val(V)`
+
+Following level 3 functions are bit different from original behaviour.
+To make it close to original, comparison happens both node value and
+map entry value. This is because map entry is a node in this implementation
+and to retrive sibling properly.
+
+-- **Level 3** -- `T:has(S)` - done!
+
+A node of type T which has a child node satisfying the selector S
+
+-- **Level 3** -- `T:val(V)` - done!
 
 A node of type T with a value that is equal to V
 

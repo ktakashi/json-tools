@@ -186,4 +186,11 @@
 	    '(("level" . "advanced"))
 	    (json:nodeset->list 
 	     ((json:select ".lang:val(\"Bulgarian\") ~ .level") json1)))
+
+;; contains
+(test-equal ".lang:contains(\"Bul\")"
+	    '(("lang" . "Bulgarian")
+	      "Bulgarian")
+	    (json:nodeset->list 
+	     ((json:select ".lang:contains(\"Bulgarian\")") json1)))
 (test-end)

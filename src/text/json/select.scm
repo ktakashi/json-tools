@@ -33,6 +33,7 @@
     (export json:select)
     (import (rnrs)
 	    (only (srfi :1) reverse! filter-map)
+	    (only (srfi :13) string-contains)
 	    (text json tools)
 	    (text json select parser))
 
@@ -104,6 +105,18 @@
 			   (json:node-value (json:map-entry-value node)))))))
        node)))
   
+  (define (contains value)
+    (lambda (node)
+      ((json:descendant-or-self 
+	(lambda (node) 
+	  (or (and (string? (json:node-value node))
+		   (string-contains (json:node-value node) value))
+	      (and (json:map-entry? node)
+		   (string-contains 
+		    (json:node-value (json:map-entry-value node))
+		    value)))))
+       node)))
+
   ;; construct select
   (define (json:select select)
     (let ((rules (if (string? select) 
@@ -243,6 +256,11 @@
 		    (eq? (caar rules) 'val))
 	       (loop (cdr rules)
 		     (cons (val (cadar rules)) converters)
+		     nested?))
+	      ((and (pair? (car rules))
+		    (eq? (caar rules) 'contains))
+	       (loop (cdr rules)
+		     (cons (contains (cadar rules)) converters)
 		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))
