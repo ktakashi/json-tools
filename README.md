@@ -84,7 +84,7 @@ to T:nth-last-child(1)
 
 A node of type T which is the only child of an array parent
 
--- **Level 2** -- `T:empty`
+-- **Level 2** -- `T:empty` - done!
 
 A node of type T which is an array or object with no child
 
