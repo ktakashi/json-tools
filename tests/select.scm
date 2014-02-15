@@ -130,6 +130,13 @@
 (test-equal ".lang :root" '()
 	    (json:nodeset->list ((json:select ".lang :root") json1)))
 
+(define json2 '#(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel")))
+		 ;; empty array
+		 ("languagesSpoken")
+		 ("weight" . 156)))
+
+(test-equal ":empty" '(()) (json:nodeset->list ((json:select ":empty") json2)))
+
 ;; or
 (test-equal ".lang, .level"
 	    '(("lang" . "Bulgarian")

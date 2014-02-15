@@ -85,6 +85,9 @@
       (json:union-nodeset
        (map (lambda (selector) (selector node)) selectors))))
 
+  (define (empty-array? node)
+    (and (json:array? node) (zero? (json:array-length node))))
+
   ;; construct select
   (define (json:select select)
     (let ((rules (if (string? select) 
@@ -192,6 +195,11 @@
 	      ((eq? (car rules) 'root)
 	       (loop (cdr rules)
 		     (cons (list (root nested?)) converters)
+		     nested?))
+	      ((eq? (car rules) 'empty)
+	       (loop (cdr rules)
+		     (cons (json:descendant-or-self empty-array?)
+			   converters)
 		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))
