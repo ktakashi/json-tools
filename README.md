@@ -113,7 +113,7 @@ A node of type T which has a child node satisfying the selector S
 
 A node of type T with a value that is equal to V
 
--- **Level 3** -- `T:contains(S)`
+-- **Level 3** -- `T:contains(S)` - done!
 
 A node of type T with a string value contains the substring S
 
