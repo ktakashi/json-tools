@@ -46,7 +46,8 @@
 
 #!r6rs
 (library (text json tools)
-    (export json:nodeset?
+    (export <json:nodeset>
+	    json:nodeset?
 	    json:nodeset->list
 	    json:nodeset
 	    json:nodeset-set
@@ -55,34 +56,42 @@
 	    json:as-nodeset
 	    json:union-nodeset
 
+	    <json:node>
 	    json:node?
 	    json:node-value
 
+	    <json:map>
 	    json:map
 	    json:map?
 	    json:map-size
 	    json:map-ref
 
+	    <json:map-entry>
 	    json:map-entry
 	    json:map-entry?
 	    json:map-entry-key
 	    json:map-entry-value
 
+	    <json:array>
 	    json:array
 	    json:array?
 	    json:array-elements
 	    json:array-ref
 	    json:array-length
 	    
+	    <json:string>
 	    json:string
 	    json:string?
 	    
+	    <json:number>
 	    json:number
 	    json:number?
 
+	    <json:boolean>
 	    json:boolean
 	    json:boolean?
 
+	    <json:null>
 	    json:null
 	    json:null?
 	    ;; common utilities
