@@ -67,7 +67,7 @@ A node of type U with an ancestor of type T
 
 A node of type U with a parent of type T
 
--- **Level 1** -- `S1, S2`
+-- **Level 1** -- `S1, S2` - done!
 
 Any node which matches either selector S1 or S2
 

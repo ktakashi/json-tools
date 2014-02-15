@@ -53,6 +53,7 @@
 	    json:empty-nodeset
 	    json:empty-nodeset?
 	    json:as-nodeset
+	    json:union-nodeset
 
 	    json:node?
 	    json:node-value

@@ -130,6 +130,16 @@
 (test-equal ".lang :root" '()
 	    (json:nodeset->list ((json:select ".lang :root") json1)))
 
+;; or
+(test-equal ".lang, .level"
+	    '(("lang" . "Bulgarian")
+	      ("lang" . "English")
+	      ("lang" . "Spanish")
+	      ("level" . "advanced")
+	      ("level" . "native")
+	      ("level" . "beginner"))
+	    (json:nodeset->list ((json:select ".lang, .level") json1)))
+	    
 ;; combinations
 (test-equal "string.lang" 
 	    '(("lang" . "Bulgarian") ("lang" . "English") ("lang" . "Spanish"))

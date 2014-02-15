@@ -79,6 +79,12 @@
 	    (json:as-nodeset node)
 	    (json:empty-nodeset)))))
 
+  (define (or-select selectors)
+    (lambda (node)
+      ;; union it
+      (json:union-nodeset
+       (map (lambda (selector) (selector node)) selectors))))
+
   ;; construct select
   (define (json:select select)
     (let ((rules (if (string? select) 
@@ -108,6 +114,15 @@
 			     (else
 			      (loop ((car conv) nodeset)
 				    (cdr conv))))))))
+	      ;; or
+	      ((eq? (car rules) 'or)
+	       (let loop2 ((groups (cdr rules)) (r '()))
+		 (if (null? groups)
+		     (loop '() 
+			   (cons (or-select (reverse! r)) converters)
+			   nested?)
+		     (loop2 (cdr groups) 
+			    (cons (loop (car groups) '() #f) r)))))
 	      ((string? (car rules)) ;; class
 	       (loop (cdr rules)
 		     (cons (json:descendant-or-self 
