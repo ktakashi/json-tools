@@ -18,6 +18,43 @@
 		 ("drinkPreference" "whiskey" "beer" "wine")
 		 ("weight" . 156)))
 
+(define json-small
+  '#(("name" . #(("first" . "Lloyd")))
+     ("favoriteColor" . "yellow")
+     ("languagesSpoken" 
+      #(("lang" . "Bulgarian"))
+      #(("lang" . "Spanish")))
+     ("drinkPreference" "whiskey" "beer" "wine")))
+
+(test-equal "*"
+	    '(#(("name" . #(("first" . "Lloyd")))
+		("favoriteColor" . "yellow")
+		("languagesSpoken" 
+		 #(("lang" . "Bulgarian"))
+		 #(("lang" . "Spanish")))
+		("drinkPreference" "whiskey" "beer" "wine"))
+	      ("name" . #(("first" . "Lloyd")))
+	      #(("first" . "Lloyd"))
+	      ("first" . "Lloyd")
+	      "Lloyd"
+	      ("favoriteColor" . "yellow")
+	      "yellow"
+	      ("languagesSpoken" 
+		 #(("lang" . "Bulgarian"))
+		 #(("lang" . "Spanish")))
+	      (#(("lang" . "Bulgarian"))
+	       #(("lang" . "Spanish")))
+	      #(("lang" . "Bulgarian"))
+	      ("lang" . "Bulgarian")
+	      "Bulgarian"
+	      #(("lang" . "Spanish"))
+	      ("lang" . "Spanish")
+	      "Spanish"
+	      ("drinkPreference" "whiskey" "beer" "wine")
+	      ("whiskey" "beer" "wine")
+	      "whiskey" "beer" "wine")
+	    (json:nodeset->list ((json:select "*") json-small)))
+
 (test-equal ".languagesSpoken"
 	    '(("languagesSpoken"
 	       #(("lang" . "Bulgarian") ("level" . "advanced"))
