@@ -93,6 +93,16 @@
       ((json:descendant-or-self 
 	(lambda (node) (not (json:empty-nodeset? (selector node)))))
        node)))
+
+  (define (val value)
+    (lambda (node)
+      ((json:descendant-or-self 
+	(lambda (node) 
+	  (or (equal? value (json:node-value node))
+	      (and (json:map-entry? node)
+		   (equal? value 
+			   (json:node-value (json:map-entry-value node)))))))
+       node)))
   
   ;; construct select
   (define (json:select select)
@@ -138,6 +148,20 @@
 			    (key-name=? (car rules) nested?))
 			   converters)
 		     nested?))
+	      ;; (class expr)
+	      ((and (pair? (car rules))
+		    (string? (caar rules)))
+	       (let ((cls (loop (list (caar rules)) '() #f))
+		     (exp (loop (cdar rules) '() #f)))
+		 ;; combine it
+		 (loop (cdr rules)
+		       (cons (lambda (node)
+			       (let ((set (cls node)))
+				 (json:union-nodeset
+				  (map (lambda (node) (exp node))
+				       (json:nodeset-set set)))))
+			     converters)
+		       nested?)))
 	      ;; *
 	      ((eq? (car rules) '*)
 	       (loop (cdr rules)
@@ -208,10 +232,17 @@
 			   converters)
 		     nested?))
 	      ;; level 3 functins
+	      ;; has
 	      ((and (pair? (car rules))
 		    (eq? (caar rules) 'has))
 	       (loop (cdr rules)
 		     (cons (has (loop (cadar rules) '() #f)) converters)
+		     nested?))
+	      ;; val
+	      ((and (pair? (car rules))
+		    (eq? (caar rules) 'val))
+	       (loop (cdr rules)
+		     (cons (val (cadar rules)) converters)
 		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))

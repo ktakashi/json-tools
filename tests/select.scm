@@ -156,7 +156,7 @@
 	    (json:nodeset->list ((json:select "string:nth-child(2)") json1)))
 
 ;; has
-(test-equal "has(.languagesSpoken)"
+(test-equal ":has(.languagesSpoken)"
 	    '(#(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel")))
 		("favoriteColor" . "yellow")
 		("languagesSpoken"
@@ -176,4 +176,14 @@
 	       #(("lang" . "Spanish") ("level" . "beginner"))))
 	    (json:nodeset->list ((json:select ":has(.languagesSpoken)") json1)))
 
+;; val
+(test-equal ":val(156)"
+	    '(("weight" . 156) 
+	      156)
+	    (json:nodeset->list ((json:select ":val(156)") json1)))
+
+(test-equal ".lang:val(\"Bulgarian\") ~ .level"
+	    '(("level" . "advanced"))
+	    (json:nodeset->list 
+	     ((json:select ".lang:val(\"Bulgarian\") ~ .level") json1)))
 (test-end)
