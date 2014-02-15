@@ -149,10 +149,16 @@
 	     : selector [ `,` selector ]*
 	     ;
 	 |#
-	 (selectors-group ((s <- selector g <- %group) 
-			   (if (null? g) s (cons s g))))
-	 (%group (('#\, s <- selector) s)
-		 (() '()))
+	 (selectors-group ((s <- selector g <- selector-group*)
+			   ;; make 'or flat
+			   (cond ((null? g) s )
+				 ((eq? (car g) 'or)
+				  (cons* 'or s (cdr g)))
+				 (else (list 'or s g)))))
+	 (or-select ((white '#\, white) 'or))
+	 (selector-group* ((or-select s <- selector g <- selector-group*) 
+			   (if (null? g) s (list 'or s g)))
+			  (() '()))
 	 #|
 	   selector
 	     : simple_selector_sequence [ combinator simple_selector_sequence ]*

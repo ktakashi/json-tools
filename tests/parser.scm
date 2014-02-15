@@ -37,4 +37,7 @@
 	     '(("weight" (expr (< x 160))) ~ "name" >> "first"))
 
 (test-parser "*" '(*))
+
+(test-parser "string, :first-child" '(or (string) (first-child)))
+(test-parser "string, :first-child, array" '(or (string) (first-child) (array)))
 (test-end)
