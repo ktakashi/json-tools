@@ -155,4 +155,25 @@
 	    '("aisle" "beer")
 	    (json:nodeset->list ((json:select "string:nth-child(2)") json1)))
 
+;; has
+(test-equal "has(.languagesSpoken)"
+	    '(#(("name" . #(("first" . "Lloyd") ("last" . "Hilaiel")))
+		("favoriteColor" . "yellow")
+		("languagesSpoken"
+		 #(("lang" . "Bulgarian") ("level" . "advanced"))
+		 #(("lang" . "English")
+		   ("level" . "native")
+		   ("preferred" . #t))
+		 #(("lang" . "Spanish") ("level" . "beginner")))
+		("seatingPreference" "window" "aisle")
+		("drinkPreference" "whiskey" "beer" "wine")
+		("weight" . 156))
+	      ("languagesSpoken"
+	       #(("lang" . "Bulgarian") ("level" . "advanced"))
+	       #(("lang" . "English")
+		 ("level" . "native")
+		 ("preferred" . #t))
+	       #(("lang" . "Spanish") ("level" . "beginner"))))
+	    (json:nodeset->list ((json:select ":has(.languagesSpoken)") json1)))
+
 (test-end)

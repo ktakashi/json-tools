@@ -88,6 +88,12 @@
   (define (empty-array? node)
     (and (json:array? node) (zero? (json:array-length node))))
 
+  (define (has selector)
+    (lambda (node)
+      ((json:descendant-or-self 
+	(lambda (node) (not (json:empty-nodeset? (selector node)))))
+       node)))
+  
   ;; construct select
   (define (json:select select)
     (let ((rules (if (string? select) 
@@ -200,6 +206,12 @@
 	       (loop (cdr rules)
 		     (cons (json:descendant-or-self empty-array?)
 			   converters)
+		     nested?))
+	      ;; level 3 functins
+	      ((and (pair? (car rules))
+		    (eq? (caar rules) 'has))
+	       (loop (cdr rules)
+		     (cons (has (loop (cadar rules) '() #f)) converters)
 		     nested?))
 	      (else
 	       (error 'json:select "not supported" rules select))))))
