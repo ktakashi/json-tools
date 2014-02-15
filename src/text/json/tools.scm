@@ -106,8 +106,11 @@
 	    json:descendant
 	    json:descendant-or-self
 	    json:following-sibling
+	    json:following-sibling-and-self
 	    json:preceding-sibling
+	    json:preceding-sibling-and-self
 	    json:sibling		; for convenience
+	    json:sibling-and-self
 	    )
     (import (rnrs)
 	    (only (srfi :1) append-map reverse! delete-duplicates!))
@@ -367,6 +370,26 @@
 			   ((json:filter pred?) 
 			    (apply json:nodeset (cdr seq))))
 			  (else (rpt (cdr seq)))))))))))
+
+  (define (json:following-sibling-and-self pred?)
+    (lambda (root-node)
+      (lambda (node)
+	(if (json:nodeset? node)
+	    (json:map-union ((json:following-sibling-and-self pred?) root-node)
+			    (json:nodeset-set node))
+	    ;; seqs ::= ((child siblings ...) ...)
+	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
+	      (if (null? seqs)
+		  *json:empty-nodeset*
+		  (let rpt ((seq (car seqs)))
+		    (cond ((null? seq)
+			   (loop (append (map (json:child-as-list json:node?)
+					      (car seqs))
+					 (cdr seqs))))
+			  ((target? (car seq) node)
+			   ((json:filter pred?) (apply json:nodeset seq)))
+			  (else (rpt (cdr seq)))))))))))
+
   (define (json:preceding-sibling pred?)
     (lambda (root-node)
       (lambda (node)
@@ -390,6 +413,29 @@
 			    (apply json:nodeset (reverse (cdr seq)))))
 			  (else (rpt (cdr seq)))))))))))
 
+  (define (json:preceding-sibling-and-self pred?)
+    (lambda (root-node)
+      (lambda (node)
+	(if (json:nodeset? node)
+	    (json:map-union ((json:preceding-sibling-and-self pred?) root-node)
+			    (json:nodeset-set node))
+	    ;; seqs ::= ((child siblings ...) ...)
+	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
+	      (if (null? seqs)
+		  *json:empty-nodeset*
+		  (let rpt ((seq (car seqs)))
+		    (cond ((null? seq)
+			   (loop (append 
+				  (map (lambda (n) 
+					 (reverse!
+					  ((json:child-as-list json:node?) n)))
+				       (car seqs))
+				  (cdr seqs))))
+			  ((target? (car seq) node)
+			   ((json:filter pred?) 
+			    (apply json:nodeset (reverse seq))))
+			  (else (rpt (cdr seq)))))))))))
+
   (define (json:sibling pred?)
     (lambda (root-node)
       (lambda (node)
@@ -403,4 +449,19 @@
 	       (merge
 		(->list (((json:preceding-sibling pred?) root-node) node))
 		(->list (((json:following-sibling pred?) root-node) node)))))))
+
+  (define (json:sibling-and-self pred?)
+    (lambda (root-node)
+      (lambda (node)
+	(define ->list json:nodeset-set)
+	(define (merge p f)
+	  (cond ((null? p) f)
+		((null? f) p)
+		(else
+		 `(,@p ,@f))))
+	(apply json:nodeset
+	       (merge
+		(->list (((json:preceding-sibling pred?) root-node) node))
+		(->list (((json:following-sibling-and-self pred?) root-node)
+			 node)))))))
 )

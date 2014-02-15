@@ -37,40 +37,166 @@ In some case, you may need to use constructors to make sure the node type is
 indeed you are expecting. For example, there is no way to detect the difference
 between JSON array and JSON map entry if it's still S-expression.
 
-```(json:node o)```
-Converts given _o_ to suitable JSON node.
+```
+(json:node o)```
+Converts given _o_ to suitable JSON node. If the _o_ is already a JSON node
+then it won't re-convert.
 
-```(json:map vector)```
+```
+(json:map vector)```
 Converts given _vector_ to `<json:map>` object.
 
-```(json:map-entry pair)```
+```
+(json:map-entry pair)```
 Converts given _pair_ to `<json:map-entry>` object.
 
-```(json:map-array list)```
+```
+(json:map-array list)```
 Converts given _list_ to `<json:map-array>` object.
 
-```(json:string string)```
+```
+(json:string string)```
 Converts given _string_ to `<json:string>` object.
 
-```(json:number number)```
+```
+(json:number number)```
 Converts given _number_ to `<json:number>` object.
 
-```(json:boolean boolean)```
+```
+(json:boolean boolean)```
 Converts given _boolean_ to `<json:boolean>` object.
 
-```(json:null null)```
+```
+(json:null null)```
 Converts given _null_ to `<json:null>` object. The _null_ must be a symbol
 `null`.
 
-```(json:nodeset nodes ...)```
+```
+(json:nodeset nodes ...)```
 Converts given _nodes_ to `<json:nodeset>` object. The returning value has
 no duplicated nodes.
+
+```
+(json:as-nodeset o)```
+Converts given _o_ to `<json:nodeset>` object. If the _o_ is already 
+a JSON nodeset then it won't re-convert.
+
+```
+(json:empty-nodeset)```
+Returns empty nodeset.
 
 Predicates
 ----------
 
-```(json:nodeset? o)```
+```
+(json:node? o)```
+Returns #t if given _o_ is one of the JSON node.
+
+```
+(json:map? o)```
+Returns #t if given _o_ is JSON map.
+
+```
+(json:map-entry? o)```
+Returns #t if given _o_ is JSON map entry.
+
+```
+(json:array? o)```
+Returns #t if given _o_ is JSON array.
+
+```
+(json:string? o)```
+Returns #t if given _o_ is JSON string.
+
+```
+(json:number? o)```
+Returns #t if given _o_ is JSON number.
+
+```
+(json:boolean? o)```
+Returns #t if given _o_ is JSON boolean.
+
+```
+(json:null? o)```
+Returns #t if given _o_ is JSON null.
+
+```
+(json:nodeset? o)```
 Returns #t if given _o_ is JSON nodeset.
+
+```
+(json:empty-nodeset? o)```
+Returns #t if given _o_ is JSON nodeset and doesn't contain any node.
+
+Accessors
+---------
+
+```
+(json:node-value node)```
+Retrieves original node value from given _node_.
+
+```
+(json:map-ref map key)
+(json:map-ref map key default)```
+Retrieves JSON map value from given JSON map _map_ associated with _key_. The
+returning value is JSON node.
+
+When the value does not exist and if the _default_ is specified then it will 
+return _default_ as its value.
+
+When the value does not exist and if the _default_ is not specified then it 
+will raise an error.
+
+```
+(json:map-entry-key map-entry)
+(json:map-entry-value map-entry)```
+Retrieves JSON map entry's key or value. The returning value is JSON node.
+
+```
+(json:array-elements array)```
+Returns all array elements of _array_.
+
+```
+(json:array-ref array n)
+(json:array-ref array n default)```
+Retrieves _n_th JSON array element from given JSON array _array_. The
+returning value is JSON node.
+
+When the _n_ is out of range and if the _default_ is specified then it will 
+return _default_ as its value.
+
+When the _n_ is out of range and if the _default_ is not specified then it 
+will raise an error.
+
+```
+(json:nodeset-set nodeset)```
+Returns all nodes of given _nodeset_.
+
+```
+(json:nodeset->list nodeset)```
+Returns all nodes of given _nodeset_ as S-expression.
+
+
+Others
+------
+
+```
+(json:map-size map)```
+Returns size of given _map_.
+
+```
+(json:array-length array)```
+Returns size of given _array_.
+
+```
+(json:union-nodeset nodeset-list)```
+Returns a nodeset merged from _nodeset-list_. The returning value doesn't
+contain duplicate nodes.
+
+Selectors
+---------
+
+To be documented
 
 
 JSON Select
@@ -86,94 +212,44 @@ this consider it as a node so this may return the different result.
 Language support
 ----------------
 
--- **Level 1** -- `*` - done!
+      | level |   Selector           |  Description
+:---: | :---: | :------------------: | :----------------
+ [X]  |   1   | `*`                  | Any node
+ [X]  |   1   | `T`                  | A node of type T, where T is one string, number, object, array, boolean, or null
+ [X]  |   1   | `T.key`              | A node of type T which is the child of an object and is the value its parents key property
+ [X]  |   1   | `T."complex key"`    | Same as previous, but with property name specified as a JSON string
+ [X]  |   1   | `T:root`             | A node of type T which is the root of the JSON document
+ [p]  |   1   | `T:nth-child(n)`     | A node of type T which is the nth child of an array parent
+ [X]  |   1   | `T:first-child`      | A node of type T which is the first child of an array parent (equivalent to T:nth-child(1))
+ [X]  |   1   | `T U`                | A node of type U with an ancestor of type T
+ [X]  |   1   | `T > U`              | A node of type U with a parent of type T
+ [X]  |   1   | `S1, S2`             | Any node which matches either selector S1 or S2
+ [p]  |   2   | `T:nth-last-child(n)`| A node of type T which is the nth child of an array parent counting from the end
+ [X]  |   2   | `T:last-child`       | A node of type T which is the last child of an array parent (equivalent to T:nth-last-child(1))
+ [X]  |   2   | `T:only-child`       | A node of type T which is the only child of an array parent
+ [X]  |   2   | `T:empty`            | A node of type T which is an array or object with no child
+ [X]  |   2   | `T ~ U`              | A node of type U with a sibling of type T
+ [ ]  |   3   | `T:expr(E)`          | A node of type T with a value that satisfies the expression E
+ [x]  |   3   | `T:has(S)`           | A node of type T which has a child node satisfying the selector S
+ [x]  |   3   | `T:val(V)`           | A node of type T with a value that is equal to V
+ [x]  |   3   | `T:contains(S)`      | A node of type T with a string value contains the substring S
 
-Any node
+Notations:
 
--- **Level 1** -- `T` - done!
+- X: the same as original implementation
+- p: nth-child related only supports number as _n_
+- x: To make it close to original, comparison happens both node value and
+     map entry value. This is because map entry is a node in this implementation
+     and to retrive sibling properly.
 
-A node of type T, where T is one string, number, object, array, boolean, or null
+Required SRFI
+=============
 
--- **Level 1** -- `T.key` - done!
+Following SRFIs are used in JSON tools and select;
 
-A node of type T which is the child of an object and is the value its parents
-key property
-
--- **Level 1** -- `T."complex key"` - done!
-
-Same as previous, but with property name specified as a JSON string
-
--- **Level 1** -- `T:root` - done!
-
-A node of type T which is the root of the JSON document
-
--- **Level 1** -- `T:nth-child(n)` - done!
-
-A node of type T which is the nth child of an array parent
-
--- **Level 1** -- `T:first-child` - done!
-
-A node of type T which is the first child of an array parent (equivalent
-to T:nth-child(1)
-
--- **Level 1** -- `T U` - done!
-
-A node of type U with an ancestor of type T
-
--- **Level 1** -- `T > U` - done!
-
-A node of type U with a parent of type T
-
--- **Level 1** -- `S1, S2` - done!
-
-Any node which matches either selector S1 or S2
-
--- **Level 2** -- `T:nth-last-child(n)` - done!
-
-A node of type T which is the nth child of an array parent counting from the end
-
--- **Level 2** -- `T:last-child` - done!
-
-A node of type T which is the last child of an array parent (equivalent
-to T:nth-last-child(1)
-
--- **Level 2** -- `T:only-child` - done!
-
-A node of type T which is the only child of an array parent
-
--- **Level 2** -- `T:empty` - done!
-
-A node of type T which is an array or object with no child
-
--- **Level 2** -- `T ~ U` - done!
-
-A node of type U with a sibling of type T
-
-NOTE: original implementation contains self node but I think it's weird
-so the result nodeset doesn't contain self node but only siblings.
-
--- **Level 3** -- `T:expr(E)`
-
-A node of type T with a value that satisfies the expression E
-
-
-Following level 3 functions are bit different from original behaviour.
-To make it close to original, comparison happens both node value and
-map entry value. This is because map entry is a node in this implementation
-and to retrive sibling properly.
-
--- **Level 3** -- `T:has(S)` - done!
-
-A node of type T which has a child node satisfying the selector S
-
--- **Level 3** -- `T:val(V)` - done!
-
-A node of type T with a value that is equal to V
-
--- **Level 3** -- `T:contains(S)` - done!
-
-A node of type T with a string value contains the substring S
-
+- SRFI-1  - list
+- SRFI-13 - string
+- SRFI-14 - character sets
 
 Supporting implementations
 ==========================
@@ -181,5 +257,9 @@ Supporting implementations
 * Sagittarius Scheme 0.5.0 (or later)
 * Mosh 0.2.7
 * Ypsilon 0.9.6-update3
+
+NOTE: Mosh contains own porting for (json) however it has different mark
+as JOSN null and I think it's a design bug since it makes empty array and
+null distinguishable.
 
 Your contribution or testing is always welcome!

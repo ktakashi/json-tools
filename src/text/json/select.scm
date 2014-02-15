@@ -193,7 +193,7 @@
 	      ;; ~
 	      ((eq? (car rules) '~)
 	       (loop (cdr rules)
-		     (cons (list (json:sibling json:node?)) converters)
+		     (cons (list (json:sibling-and-self json:node?)) converters)
 		     nested?))
 	      ;; simple types
 	      ((assq (car rules) type-predicates)
