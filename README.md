@@ -37,107 +37,84 @@ In some case, you may need to use constructors to make sure the node type is
 indeed you are expecting. For example, there is no way to detect the difference
 between JSON array and JSON map entry if it's still S-expression.
 
-```
-(json:node o)```
+```(json:node o)```
 Converts given _o_ to suitable JSON node. If the _o_ is already a JSON node
 then it won't re-convert.
 
-```
-(json:map vector)```
+```(json:map vector)```
 Converts given _vector_ to `<json:map>` object.
 
-```
-(json:map-entry pair)```
+```(json:map-entry pair)```
 Converts given _pair_ to `<json:map-entry>` object.
 
-```
-(json:map-array list)```
+```(json:map-array list)```
 Converts given _list_ to `<json:map-array>` object.
 
-```
-(json:string string)```
+```(json:string string)```
 Converts given _string_ to `<json:string>` object.
 
-```
-(json:number number)```
+```(json:number number)```
 Converts given _number_ to `<json:number>` object.
 
-```
-(json:boolean boolean)```
+```(json:boolean boolean)```
 Converts given _boolean_ to `<json:boolean>` object.
 
-```
-(json:null null)```
+```(json:null null)```
 Converts given _null_ to `<json:null>` object. The _null_ must be a symbol
 `null`.
 
-```
-(json:nodeset nodes ...)```
+```(json:nodeset nodes ...)```
 Converts given _nodes_ to `<json:nodeset>` object. The returning value has
 no duplicated nodes.
 
-```
-(json:as-nodeset o)```
+```(json:as-nodeset o)```
 Converts given _o_ to `<json:nodeset>` object. If the _o_ is already 
 a JSON nodeset then it won't re-convert.
 
-```
-(json:empty-nodeset)```
+```(json:empty-nodeset)```
 Returns empty nodeset.
 
 Predicates
 ----------
 
-```
-(json:node? o)```
+```(json:node? o)```
 Returns #t if given _o_ is one of the JSON node.
 
-```
-(json:map? o)```
+```(json:map? o)```
 Returns #t if given _o_ is JSON map.
 
-```
-(json:map-entry? o)```
+```(json:map-entry? o)```
 Returns #t if given _o_ is JSON map entry.
 
-```
-(json:array? o)```
+```(json:array? o)```
 Returns #t if given _o_ is JSON array.
 
-```
-(json:string? o)```
+```(json:string? o)```
 Returns #t if given _o_ is JSON string.
 
-```
-(json:number? o)```
+```(json:number? o)```
 Returns #t if given _o_ is JSON number.
 
-```
-(json:boolean? o)```
+```(json:boolean? o)```
 Returns #t if given _o_ is JSON boolean.
 
-```
-(json:null? o)```
+```(json:null? o)```
 Returns #t if given _o_ is JSON null.
 
-```
-(json:nodeset? o)```
+```(json:nodeset? o)```
 Returns #t if given _o_ is JSON nodeset.
 
-```
-(json:empty-nodeset? o)```
+```(json:empty-nodeset? o)```
 Returns #t if given _o_ is JSON nodeset and doesn't contain any node.
 
 Accessors
 ---------
 
-```
-(json:node-value node)```
+```(json:node-value node)```
 Retrieves original node value from given _node_.
 
-```
-(json:map-ref map key)
-(json:map-ref map key default)```
+```(json:map-ref map key)```
+```(json:map-ref map key default)```
 Retrieves JSON map value from given JSON map _map_ associated with _key_. The
 returning value is JSON node.
 
@@ -147,18 +124,15 @@ return _default_ as its value.
 When the value does not exist and if the _default_ is not specified then it 
 will raise an error.
 
-```
-(json:map-entry-key map-entry)
-(json:map-entry-value map-entry)```
+```(json:map-entry-key map-entry)```
+```(json:map-entry-value map-entry)```
 Retrieves JSON map entry's key or value. The returning value is JSON node.
 
-```
-(json:array-elements array)```
+```(json:array-elements array)```
 Returns all array elements of _array_.
 
-```
-(json:array-ref array n)
-(json:array-ref array n default)```
+```(json:array-ref array n)```
+```(json:array-ref array n default)```
 Retrieves _n_th JSON array element from given JSON array _array_. The
 returning value is JSON node.
 
@@ -168,28 +142,23 @@ return _default_ as its value.
 When the _n_ is out of range and if the _default_ is not specified then it 
 will raise an error.
 
-```
-(json:nodeset-set nodeset)```
+```(json:nodeset-set nodeset)```
 Returns all nodes of given _nodeset_.
 
-```
-(json:nodeset->list nodeset)```
+```(json:nodeset->list nodeset)```
 Returns all nodes of given _nodeset_ as S-expression.
 
 
 Others
 ------
 
-```
-(json:map-size map)```
+```(json:map-size map)```
 Returns size of given _map_.
 
-```
-(json:array-length array)```
+```(json:array-length array)```
 Returns size of given _array_.
 
-```
-(json:union-nodeset nodeset-list)```
+```(json:union-nodeset nodeset-list)```
 Returns a nodeset merged from _nodeset-list_. The returning value doesn't
 contain duplicate nodes.
 
