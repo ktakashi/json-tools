@@ -22,6 +22,8 @@
 
 (test-parser ":root" '(root))
 
+(test-parser ":empty" '(empty))
+
 (test-parser "number" '(number))
 
 (test-parser ":has(:root > .preferred)" '((has (root > "preferred"))))

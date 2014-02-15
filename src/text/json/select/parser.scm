@@ -253,12 +253,13 @@
 	   (list 'val v)))
 	 #|
 	   pseudo_class_name
-	     : `root` | `first-child` | `last-child` | `only-child`
+	     : `root` | `first-child` | `last-child` | `only-child` | `empty`
 	 |#
 	 (pseudo-class-name (((token "root"))        'root)
 			    (((token "first-child")) 'first-child)
 			    (((token "last-child"))  'last-child)
-			    (((token "only-child"))  'only-child))
+			    (((token "only-child"))  'only-child)
+			    (((token "empty"))       'empty))
 	 #|
 	   nth_function_name
 	   : `nth-child` | `nth-last-child`
