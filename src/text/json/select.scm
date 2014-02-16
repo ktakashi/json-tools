@@ -113,6 +113,9 @@
 		    value)))))
        node)))
 
+  (define (expr value)
+    (error 'expr "not yet"))
+
   ;; construct select
   (define (json:select select)
     (let ((rules (if (string? select) 
@@ -123,6 +126,9 @@
 	  (and (json:map-entry? node)
 	       (equal? name (json:node-value (json:map-entry-key node))))))
 
+      ;; this will be called (type something) pattern
+      ;; and given node is narrowed with `something` already
+      ;; so what we only need to do is that check the given node.
       (define (type-pred pred?)
 	(lambda (node)
 	  (if (json:map-entry? node)
@@ -253,6 +259,10 @@
 		    (eq? (caar rules) 'contains))
 	       (loop (cdr rules)
 		     (cons (contains (cadar rules)) converters)))
+	      ((and (pair? (car rules))
+		    (eq? (caar rules) 'expr))
+	       (loop (cdr rules)
+		     (cons (expr (cadar rules)) converters)))
 	      (else
 	       (error 'json:select "not supported" rules select))))))
   )

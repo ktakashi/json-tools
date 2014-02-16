@@ -279,8 +279,9 @@
 	     | val
 	     ;
 	 |#
-	 (expr ((e1 <- expr1 op <- binop e2 <- expr1) (list op e1 e2)))
-	 (expr1(('#\( e <- expr '#\)) e)
+	 (expr ((e1 <- expr1 op <- binop e2 <- expr1) (list op e1 e2))
+	       ((e <- expr1) e))
+	 (expr1((white '#\( e <- expr '#\) white) e)
 	       ((v <- val) v))
 	 #|
 	   binop
@@ -310,12 +311,12 @@
 	     : json_number | json_string | 'true' | 'false' | 'null' | 'x'
 	     ;
 	 |#
-	 (val ((n <- json-number) n)
-	      ((s <- json-string) s)
-	      (((token "true"))  'true)
-	      (((token "false")) 'false)
-	      (((token "null"))  'null)
-	      (('#\x) 'x))
+	 (val ((white n <- json-number white) n)
+	      ((white s <- json-string white) s)
+	      ((white (token "true")  white)  'true)
+	      ((white (token "false") white) 'false)
+	      ((white (token "null")  white)  'null)
+	      ((white '#\x white) 'x))
 	 ;; from (json)
 	 (json-string ((white '#\" body <- jstring-body '#\") body))
 	 ;; from (json)
