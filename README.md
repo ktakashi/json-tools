@@ -6,8 +6,16 @@ Collection of JSON utilities.
 JSON is lightweight data format and widely used. It is convenient to have
 a library which can handle it.
 
-TODO document for S-JSON structure (Chichken's json module format)
+The expected JSON structure mapping is like this;
 
+- JSON map     -> vector
+- JSON array   -> list
+- JSON boolean -> boolean
+- JSON null    -> 'null
+- JSON string  -> string
+- JSON number  -> number
+
+Above mapping is used json module from Chicken's egg. (except the null mapping).
 
 
 JSON Tools
@@ -198,7 +206,7 @@ Language support
  [X]  |   2   | `T:only-child`       | A node of type T which is the only child of an array parent
  [X]  |   2   | `T:empty`            | A node of type T which is an array or object with no child
  [X]  |   2   | `T ~ U`              | A node of type U with a sibling of type T
- [ ]  |   3   | `T:expr(E)`          | A node of type T with a value that satisfies the expression E
+ [X]  |   3   | `T:expr(E)`          | A node of type T with a value that satisfies the expression E
  [x]  |   3   | `T:has(S)`           | A node of type T which has a child node satisfying the selector S
  [x]  |   3   | `T:val(V)`           | A node of type T with a value that is equal to V
  [x]  |   3   | `T:contains(S)`      | A node of type T with a string value contains the substring S
@@ -226,6 +234,9 @@ Supporting implementations
 * Sagittarius Scheme 0.5.0 (or later)
 * Mosh 0.2.7
 * Ypsilon 0.9.6-update3
+
+I believe it's not difficult to port to other R6RS implementations as long as
+it supports the required SRFI.
 
 NOTE: Mosh contains own porting for (json) however it has different mark
 as JOSN null and I think it's a design bug since it makes empty array and

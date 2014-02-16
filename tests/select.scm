@@ -193,4 +193,22 @@
 	      "Bulgarian")
 	    (json:nodeset->list 
 	     ((json:select ".lang:contains(\"Bulgarian\")") json1)))
+
+;; expr
+(test-equal ":expr(x > 150)"
+	    '(("weight" . 156)
+	      156)
+	    (json:nodeset->list ((json:select ":expr(x > 150)") json1)))
+(test-equal ":expr(x *= \"L\")"
+	    '(("first" . "Lloyd")
+	      "Lloyd")
+	    (json:nodeset->list ((json:select ":expr(x *= \"L\")") json1)))
+
+(test-equal ":expr(x *= \"L\") ~ *"
+	    '(("first" . "Lloyd")
+	      "Lloyd"
+	      ("last" . "Hilaiel")
+	      "Hilaiel")
+	    (json:nodeset->list ((json:select ":expr(x *= \"L\") ~ *") json1)))
+
 (test-end)

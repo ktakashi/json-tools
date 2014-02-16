@@ -33,7 +33,7 @@
     (export json:select)
     (import (rnrs)
 	    (only (srfi :1) reverse! filter-map)
-	    (only (srfi :13) string-contains)
+	    (only (srfi :13) string-contains string-prefix? string-suffix?)
 	    (text json tools)
 	    (text json select parser))
 
@@ -112,9 +112,73 @@
 		    (json:node-value (json:map-entry-value node))
 		    value)))))
        node)))
+  (define (arithmetic-operation op)
+    (lambda (a b)
+      (if (and (number? a) (number? b))
+	  (op a b)
+	  #f)))
+  (define (string-operation op)
+    (lambda (a b)
+      (if (and (string? a) (string? b))
+	  (op a b)
+	  #f)))
+  (define (string-starts-with str prefix)
+    (string-prefix? prefix str))
+  (define (string-ends-with str suffix)
+    (string-suffix? suffix str))
+  (define *expr-operations*
+    `((*   . ,(arithmetic-operation *))
+      (/   . ,(arithmetic-operation /))
+      (+   . ,(arithmetic-operation +))
+      (-   . ,(arithmetic-operation -))
+      (%   . ,(arithmetic-operation mod))
+      (<=  . ,(arithmetic-operation <=))
+      (>=  . ,(arithmetic-operation >=))
+      (<   . ,(arithmetic-operation <))
+      (>   . ,(arithmetic-operation >))
+      (=   . ,equal?)
+      (^=  . ,(string-operation string-starts-with))
+      ($=  . ,(string-operation string-ends-with))
+      (*=  . ,(string-operation string-contains))
+      (!=  . ,(lambda (a b) (not (equal? a b))))
+      (and . ,(lambda (a b) (and a b)))
+      (or  . ,(lambda (a b) (or  a b)))))
+      
+  ;; this is not a good implementation
+  ;; it traverse the expression tree twice.
+  ;; this can be only once but i'll do it
+  ;; when the performance gets issue.
+  (define (expr expression)
+    (define (fold-value exp value)
+      (define (rec exp)
+	(cond ((pair? exp)
+	       (let ((a (rec (car exp)))
+		     (d (rec (cdr exp))))
+		 (if (eq? a d) expr (cons a d))))
+	      ((eq? exp 'x) value)
+	      (else exp)))
+      (rec exp))
+    (define (eval-expression exp)
+      (cond ((null? exp) #f) ;; I think this is invalid case
+	    ((and (pair? exp)
+		  (assq (car exp) *expr-operations*))
+	     => (lambda (slot)
+		  (let ((lhs (eval-expression (cadr exp)))
+			(rhs (eval-expression (caddr exp))))
+		    ((cdr slot) lhs rhs))))
+	    ((pair? exp) #f) ;; must be not supported expression
+	    (else exp)))
 
-  (define (expr value)
-    (error 'expr "not yet"))
+    (lambda (node)
+      ((json:descendant-or-self
+	(lambda (node)
+	  (let ((exp (fold-value expression 
+		      ;; the same trick as contains ...
+		      (if (json:map-entry? node)
+			  (json:node-value (json:map-entry-value node))
+			  (json:node-value node)))))
+	    (eval-expression exp))))
+       node)))
 
   ;; construct select
   (define (json:select select)

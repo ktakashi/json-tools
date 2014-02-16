@@ -289,23 +289,22 @@
 	     | '^=' | '*=' | '>' | '<' | '=' | '!=' | '&&' | '||'
 	     ;
 	 |#
-	 (binop (('#\*) '*)
+	 (binop (((token "<=")) '<=)
+		(((token ">=")) '>=)
+		(((token "$=")) '$=)
+		(((token "^=")) '^=)
+		(((token "*=")) '*=)
+		(((token "!=")) '!=)
+		(((token "&&")) 'and) ;; for consistancy of 'or
+		(((token "||")) 'or) ;; to avoid escape symbol
+		(('#\*) '*)
 		(('#\/) '/)
 		(('#\%) '%)
 		(('#\+) '+)
 		(('#\-) '-)
 		(('#\>) '>)
 		(('#\<) '<)
-		(('#\=) '=)
-		(((token "<=")) '<=)
-		(((token ">=")) '>=)
-		(((token "$=")) '$=)
-		(((token "^=")) '^=)
-		(((token "*=")) '*=)
-		(((token "*=")) '*=)
-		(((token "!=")) '!=)
-		(((token "&&")) 'and) ;; for consistancy of 'or
-		(((token "||")) 'or)) ;; to avoid escape symbol
+		(('#\=) '=))
 	 #|
 	   val
 	     : json_number | json_string | 'true' | 'false' | 'null' | 'x'
@@ -313,8 +312,8 @@
 	 |#
 	 (val ((white n <- json-number white) n)
 	      ((white s <- json-string white) s)
-	      ((white (token "true")  white)  'true)
-	      ((white (token "false") white) 'false)
+	      ((white (token "true")  white)  #t)
+	      ((white (token "false") white)  #f)
 	      ((white (token "null")  white)  'null)
 	      ((white '#\x white) 'x))
 	 ;; from (json)
