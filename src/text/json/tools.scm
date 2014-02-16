@@ -138,7 +138,7 @@
   (define-record-type (<json:null> json:null json:null?)
     (parent <json:node>)
     ;; TODO should we assume 'null?
-    (protocol (atom-protocol 'json:boolean (lambda (o) (eq? o 'null)))))
+    (protocol (atom-protocol 'json:null (lambda (o) (eq? o 'null)))))
   (define-record-type (<json:array> json:array json:array?)
     (parent <json:node>)
     (fields (immutable elements json:array-elements))
