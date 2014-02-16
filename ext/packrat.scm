@@ -287,7 +287,7 @@
    (lambda (s) (write o s))))
 
 (define-syntax packrat-parser
-  (syntax-rules (<- quote ! $@ /)
+  (syntax-rules (<- quote ! \x40; /)
     ((_ start (nonterminal (alternative body0 body ...) ...) ...)
      (let ()
        (define nonterminal
@@ -326,7 +326,7 @@
 			 (lambda (var)
 			   (packrat-parser #f "alt" nt body (rest ...)))))
 
-    ((_ #f "alt" nt body (var <- $@ rest ...))
+    ((_ #f "alt" nt body (var <- \x40; rest ...))
      (lambda (results)
        (let ((var (parse-results-position results)))
 	 ((packrat-parser #f "alt" nt body (rest ...)) results))))
