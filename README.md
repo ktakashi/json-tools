@@ -240,6 +240,6 @@ it supports the required SRFI.
 
 NOTE: Mosh contains own porting for (json) however it has different mark
 as JOSN null and I think it's a design bug since it makes empty array and
-null distinguishable.
+null indistinguishable.
 
 Your contribution or testing is always welcome!
