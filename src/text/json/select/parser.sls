@@ -28,6 +28,7 @@
 ;;;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;;;
 
+#!r6rs
 (library (text json select parser)
     (export json:parse-selector)
     (import (rnrs) (packrat) (srfi :14))
