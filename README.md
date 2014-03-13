@@ -234,6 +234,7 @@ Supporting implementations
 * Sagittarius Scheme 0.5.0 (or later)
 * Mosh 0.2.7
 * Ypsilon 0.9.6-update3
+* Racket (plt-r6rs)
 
 I believe it's not difficult to port to other R6RS implementations as long as
 it supports the required SRFI.
@@ -241,5 +242,8 @@ it supports the required SRFI.
 NOTE: Mosh contains own porting for (json) however it has different mark
 as JOSN null and I think it's a design bug since it makes empty array and
 null indistinguishable.
+
+NOTE: For Racket, `ext/packrat.sls` for some reason must be installed using
+`--install` option.
 
 Your contribution or testing is always welcome!

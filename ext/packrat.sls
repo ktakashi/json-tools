@@ -58,7 +58,7 @@
 	    packrat-parser)
     (import (rnrs)
 	    (rnrs r5rs)
-	    (srfi :1))
+	    (only (srfi :1) lset-union))
 ;; Packrat Parser Library
 ;;
 ;; Copyright (c) 2004, 2005 Tony Garnock-Jones <tonyg@kcbbs.gen.nz>
