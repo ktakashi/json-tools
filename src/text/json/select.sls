@@ -43,7 +43,8 @@
       (boolean . ,json:boolean?)
       (null    . ,json:null?)
       (object  . ,json:node?)
-      (array   . ,json:array?)))
+      (array   . ,json:array?)
+      (binary  . ,json:binary?)))
 
   ;; should we make this configurable?
   (define (nth-function n last?)
@@ -260,7 +261,7 @@
 	      ;; ~
 	      ((eq? (car rules) '~)
 	       (loop (cdr rules)
-		     (cons (list (json:sibling-and-self json:node?))
+		     (cons (list (json:sibling-or-self json:node?))
 			   converters)))
 	      ;; simple types
 	      ((assq (car rules) type-predicates)

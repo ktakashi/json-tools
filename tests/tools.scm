@@ -189,4 +189,12 @@
 	    (let ((set (((json:sibling values) json1)
 			(cadddr ((json:child-as-list values) json1)))))
 	      (json:nodeset->list set)))
+
+;; extension
+(test-assert "json:binary?"
+	     (json:binary? (json:node #vu8(1 2 3 4))))
+(test-assert "json:binary? (implicit)"
+	     (json:binary? 
+	      (car (json:nodeset-set (json:as-nodeset #vu8(1 2 3 4))))))
+
 (test-end)

@@ -211,4 +211,17 @@
 	      "Hilaiel")
 	    (json:nodeset->list ((json:select ":expr(x *= \"L\") ~ *") json1)))
 
+(define json3 '#(("data" . #vu8(1 2 3 4 5))
+		 ("name" . "name")))
+
+(test-equal "binary"
+	    '(#vu8(1 2 3 4 5))
+	    (json:nodeset->list ((json:select "binary") json3)))
+(test-equal "binary - data"
+	    '(("data" . #vu8(1 2 3 4 5)))
+	    (json:nodeset->list ((json:select ".data") json3)))
+(test-equal "binary - data"
+	    '(#vu8(1 2 3 4 5))
+	    (json:nodeset->list ((json:select ".data > binary") json3)))
+
 (test-end)

@@ -59,6 +59,7 @@
 	    <json:node>
 	    json:node?
 	    json:node-value
+	    json:node
 
 	    <json:map>
 	    json:map
@@ -94,6 +95,10 @@
 	    <json:null>
 	    json:null
 	    json:null?
+
+	    <json:binary>
+	    json:binary
+	    json:binary?
 	    ;; common utilities
 	    json:filter
 	    json:child-nodes-as-list
@@ -106,11 +111,11 @@
 	    json:descendant
 	    json:descendant-or-self
 	    json:following-sibling
-	    json:following-sibling-and-self
+	    json:following-sibling-or-self
 	    json:preceding-sibling
-	    json:preceding-sibling-and-self
+	    json:preceding-sibling-or-self
 	    json:sibling		; for convenience
-	    json:sibling-and-self
+	    json:sibling-or-self
 	    )
     (import (rnrs)
 	    (only (srfi :1) append-map reverse! delete-duplicates!))
@@ -135,6 +140,9 @@
   (define-record-type (<json:boolean> json:boolean json:boolean?)
     (parent <json:node>)
     (protocol (atom-protocol 'json:boolean boolean?)))
+  (define-record-type (<json:binary> json:binary json:binary?)
+    (parent <json:node>)
+    (protocol (atom-protocol 'json:binary bytevector?)))
   (define-record-type (<json:null> json:null json:null?)
     (parent <json:node>)
     ;; TODO should we assume 'null?
@@ -165,14 +173,15 @@
 		    (p (vector-map json:map-entry vec)))))))
   
   (define (json:node o)
-    (cond ((json:node? o) o)
-	  ((vector? o) 	 (json:map o))
+    (cond ((json:node? o)  o)
+	  ((vector? o) 	   (json:map o))
 	  ;; this makes a bit trouble with map-entry
-	  ((list? o)   	 (json:array o))
-	  ((string? o) 	 (json:string o))
-	  ((number? o) 	 (json:number o))
-	  ((boolean? o)  (json:boolean o))
-	  ((eq? o 'null) (json:null o))
+	  ((list? o)   	   (json:array o))
+	  ((string? o) 	   (json:string o))
+	  ((number? o) 	   (json:number o))
+	  ((boolean? o)    (json:boolean o))
+	  ((bytevector? o) (json:binary o))
+	  ((eq? o 'null)   (json:null o))
 	  (else (error 'json:node "unsupported value" o))))
   
   (define (json:map-size o) (json:map-entries (vector-length o)))
@@ -371,11 +380,11 @@
 			    (apply json:nodeset (cdr seq))))
 			  (else (rpt (cdr seq)))))))))))
 
-  (define (json:following-sibling-and-self pred?)
+  (define (json:following-sibling-or-self pred?)
     (lambda (root-node)
       (lambda (node)
 	(if (json:nodeset? node)
-	    (json:map-union ((json:following-sibling-and-self pred?) root-node)
+	    (json:map-union ((json:following-sibling-or-self pred?) root-node)
 			    (json:nodeset-set node))
 	    ;; seqs ::= ((child siblings ...) ...)
 	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
@@ -413,11 +422,11 @@
 			    (apply json:nodeset (reverse (cdr seq)))))
 			  (else (rpt (cdr seq)))))))))))
 
-  (define (json:preceding-sibling-and-self pred?)
+  (define (json:preceding-sibling-or-self pred?)
     (lambda (root-node)
       (lambda (node)
 	(if (json:nodeset? node)
-	    (json:map-union ((json:preceding-sibling-and-self pred?) root-node)
+	    (json:map-union ((json:preceding-sibling-or-self pred?) root-node)
 			    (json:nodeset-set node))
 	    ;; seqs ::= ((child siblings ...) ...)
 	    (let loop ((seqs (list (json:as-nodeset->list root-node))))
@@ -450,7 +459,7 @@
 		(->list (((json:preceding-sibling pred?) root-node) node))
 		(->list (((json:following-sibling pred?) root-node) node)))))))
 
-  (define (json:sibling-and-self pred?)
+  (define (json:sibling-or-self pred?)
     (lambda (root-node)
       (lambda (node)
 	(define ->list json:nodeset-set)
@@ -462,6 +471,6 @@
 	(apply json:nodeset
 	       (merge
 		(->list (((json:preceding-sibling pred?) root-node) node))
-		(->list (((json:following-sibling-and-self pred?) root-node)
+		(->list (((json:following-sibling-or-self pred?) root-node)
 			 node)))))))
 )

@@ -17,6 +17,9 @@ The expected JSON structure mapping is like this;
 
 Above mapping is used json module from Chicken's egg. (except the null mapping).
 
+As an extension, JSON Tools also handles binary type which mapped to Scheme's
+bytevector. If S-expression JSON representation contains bytevector, it will
+be mapped to JSON binary.
 
 JSON Tools
 ==========
@@ -33,6 +36,7 @@ are the provided types;
 - `<json:number>` - number
 - `<json:boolean>` - boolean
 - `<json:null>` - null
+- `<json:binary>` - extension for Scheme bytevector
 
 The selectors return following nodeset type;
 
@@ -66,6 +70,9 @@ Converts given _number_ to `<json:number>` object.
 
 ```(json:boolean boolean)```
 Converts given _boolean_ to `<json:boolean>` object.
+
+```(json:binary bytevector)```
+Converts given _bytevector_ to `<json:binary>` object.
 
 ```(json:null null)```
 Converts given _null_ to `<json:null>` object. The _null_ must be a symbol
@@ -105,6 +112,9 @@ Returns #t if given _o_ is JSON number.
 
 ```(json:boolean? o)```
 Returns #t if given _o_ is JSON boolean.
+
+```(json:binary? o)```
+Returns #t if given _o_ is JSON binary.
 
 ```(json:null? o)```
 Returns #t if given _o_ is JSON null.
@@ -210,6 +220,23 @@ Language support
  [x]  |   3   | `T:has(S)`           | A node of type T which has a child node satisfying the selector S
  [x]  |   3   | `T:val(V)`           | A node of type T with a value that is equal to V
  [x]  |   3   | `T:contains(S)`      | A node of type T with a string value contains the substring S
+
+Types:
+
+The original specification specifies following types;
+
+- object
+- array
+- number
+- string
+- boolean
+- null
+
+As an extension, JSON Tools can handle following type as well;
+
+- binary
+
+The binary type described above however can be only searched by type name.
 
 Notations:
 

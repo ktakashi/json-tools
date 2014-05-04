@@ -211,7 +211,8 @@
 			((n <- (token "number"))  (string->symbol n))
 			((s <- (token "string"))  (string->symbol s))
 			((b <- (token "boolean")) (string->symbol b))
-			((n <- (token "null"))    (string->symbol n)))
+			((n <- (token "null"))    (string->symbol n))
+			((b <- (token "binary"))  (string->symbol b)))
 	 #|
 	   universal
 	     : '*'
