@@ -202,7 +202,7 @@ Language support
       | level |   Selector           |  Description
 :---: | :---: | :------------------: | :----------------
  [X]  |   1   | `*`                  | Any node
- [X]  |   1   | `T`                  | A node of type T, where T is one string, number, object, array, boolean, or null
+ [X]  |   1   | `T`                  | A node of type T, where T is one string, number, object, array, boolean, binary, or null
  [X]  |   1   | `T.key`              | A node of type T which is the child of an object and is the value its parents key property
  [X]  |   1   | `T."complex key"`    | Same as previous, but with property name specified as a JSON string
  [X]  |   1   | `T:root`             | A node of type T which is the root of the JSON document
