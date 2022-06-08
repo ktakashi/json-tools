@@ -199,27 +199,27 @@ this consider it as a node so this may return the different result.
 Language support
 ----------------
 
-      | level |   Selector           |  Description
-:---: | :---: | :------------------: | :----------------
- [X]  |   1   | `*`                  | Any node
- [X]  |   1   | `T`                  | A node of type T, where T is one string, number, object, array, boolean, binary, or null
- [X]  |   1   | `T.key`              | A node of type T which is the child of an object and is the value its parents key property
- [X]  |   1   | `T."complex key"`    | Same as previous, but with property name specified as a JSON string
- [X]  |   1   | `T:root`             | A node of type T which is the root of the JSON document
- [p]  |   1   | `T:nth-child(n)`     | A node of type T which is the nth child of an array parent
- [X]  |   1   | `T:first-child`      | A node of type T which is the first child of an array parent (equivalent to T:nth-child(1))
- [X]  |   1   | `T U`                | A node of type U with an ancestor of type T
- [X]  |   1   | `T > U`              | A node of type U with a parent of type T
- [X]  |   1   | `S1, S2`             | Any node which matches either selector S1 or S2
- [p]  |   2   | `T:nth-last-child(n)`| A node of type T which is the nth child of an array parent counting from the end
- [X]  |   2   | `T:last-child`       | A node of type T which is the last child of an array parent (equivalent to T:nth-last-child(1))
- [X]  |   2   | `T:only-child`       | A node of type T which is the only child of an array parent
- [X]  |   2   | `T:empty`            | A node of type T which is an array or object with no child
- [X]  |   2   | `T ~ U`              | A node of type U with a sibling of type T
- [X]  |   3   | `T:expr(E)`          | A node of type T with a value that satisfies the expression E
- [x]  |   3   | `T:has(S)`           | A node of type T which has a child node satisfying the selector S
- [x]  |   3   | `T:val(V)`           | A node of type T with a value that is equal to V
- [x]  |   3   | `T:contains(S)`      | A node of type T with a string value contains the substring S
+|       | level |   Selector           |  Description
+| :---: | :---: | :------------------: | :----------------
+|  [X]  |   1   | `*`                  | Any node
+|  [X]  |   1   | `T`                  | A node of type T, where T is one string, number, object, array, boolean, binary, or null
+|  [X]  |   1   | `T.key`              | A node of type T which is the child of an object and is the value its parents key property
+|  [X]  |   1   | `T."complex key"`    | Same as previous, but with property name specified as a JSON string
+|  [X]  |   1   | `T:root`             | A node of type T which is the root of the JSON document
+|  [p]  |   1   | `T:nth-child(n)`     | A node of type T which is the nth child of an array parent
+|  [X]  |   1   | `T:first-child`      | A node of type T which is the first child of an array parent (equivalent to T:nth-child(1))
+|  [X]  |   1   | `T U`                | A node of type U with an ancestor of type T
+|  [X]  |   1   | `T > U`              | A node of type U with a parent of type T
+|  [X]  |   1   | `S1, S2`             | Any node which matches either selector S1 or S2
+|  [p]  |   2   | `T:nth-last-child(n)`| A node of type T which is the nth child of an array parent counting from the end
+|  [X]  |   2   | `T:last-child`       | A node of type T which is the last child of an array parent (equivalent to T:nth-last-child(1))
+|  [X]  |   2   | `T:only-child`       | A node of type T which is the only child of an array parent
+|  [X]  |   2   | `T:empty`            | A node of type T which is an array or object with no child
+|  [X]  |   2   | `T ~ U`              | A node of type U with a sibling of type T
+|  [X]  |   3   | `T:expr(E)`          | A node of type T with a value that satisfies the expression E
+|  [x]  |   3   | `T:has(S)`           | A node of type T which has a child node satisfying the selector S
+|  [x]  |   3   | `T:val(V)`           | A node of type T with a value that is equal to V
+|  [x]  |   3   | `T:contains(S)`      | A node of type T with a string value contains the substring S
 
 Types:
 
